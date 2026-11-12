@@ -6,3 +6,295 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ───────── ENUMS ─────────
+enum RolUsuario {
+  ADMIN
+  GERENTE
+  CAJERO
+  BARISTA
+}
+
+enum UnidadMedida {
+  G
+  ML
+  UNIDAD
+}
+
+enum TipoProducto {
+  ELABORADO // se fabrica con receta
+  REVENTA   // empacado, descuenta 1 unidad de un insumo
+}
+
+enum TipoDocumento {
+  CF  // Consumidor final
+  CCF // Comprobante de crédito fiscal
+}
+
+enum EstadoVenta {
+  EMITIDA
+  ANULADA
+}
+
+enum MedioPago {
+  EFECTIVO
+  TARJETA
+  BITCOIN
+  CHIVO_WALLET
+}
+
+enum EstadoTurno {
+  ABIERTO
+  CERRADO
+}
+
+enum CondicionPago {
+  CONTADO
+  CREDITO
+}
+
+enum EstadoCuenta {
+  PENDIENTE
+  PARCIAL
+  PAGADA
+}
+
+enum TipoMovimiento {
+  COMPRA
+  VENTA
+  AJUSTE
+  MERMA
+}
+
+enum TipoPlanilla {
+  QUINCENAL
+}
+
+enum EstadoPlanilla {
+  BORRADOR
+  APROBADA
+}
+
+// ───────── BASE (Saúl) ─────────
+model Sucursal {
+  id         Int      @id @default(autoincrement())
+  nombre     String
+  direccion  String?
+  telefono   String?
+  activa     Boolean  @default(true)
+  creadaEn   DateTime @default(now())
+
+  usuarios    Usuario[]
+  empleados   Empleado[]
+  stocks      StockSucursal[]
+  movimientos MovimientoInventario[]
+  compras     Compra[]
+  turnos      Turno[]
+  ventas      Venta[]
+  correlativos Correlativo[]
+  planillas   Planilla[]
+}
+
+model Usuario {
+  id         Int        @id @default(autoincrement())
+  nombre     String
+  email      String     @unique
+  password   String
+  rol        RolUsuario
+  activo     Boolean    @default(true)
+  creadoEn   DateTime   @default(now())
+
+  sucursalId Int?
+  sucursal   Sucursal?  @relation(fields: [sucursalId], references: [id])
+  empleadoId Int?       @unique
+  empleado   Empleado?  @relation(fields: [empleadoId], references: [id])
+
+  turnos     Turno[]
+  ventas     Venta[]
+  abonos     Abono[]
+}
+
+// ───────── INVENTARIO Y RECETAS (Vega) ─────────
+model Categoria {
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique
+  productos Producto[]
+}
+
+model Insumo {
+  id            Int          @id @default(autoincrement())
+  nombre        String       @unique
+  unidad        UnidadMedida
+  costoUnitario Decimal      @default(0) @db.Decimal(12, 4)
+  activo        Boolean      @default(true)
+
+  stocks          StockSucursal[]
+  recetaItems     RecetaItem[]
+  productosReventa Producto[]
+  compraDetalles  CompraDetalle[]
+  movimientos     MovimientoInventario[]
+}
+
+// Stock por sucursal + mínimo para alertas
+model StockSucursal {
+  id          Int      @id @default(autoincrement())
+  cantidad    Decimal  @default(0) @db.Decimal(14, 3)
+  stockMinimo Decimal  @default(0) @db.Decimal(14, 3)
+
+  insumoId    Int
+  insumo      Insumo   @relation(fields: [insumoId], references: [id])
+  sucursalId  Int
+  sucursal    Sucursal @relation(fields: [sucursalId], references: [id])
+
+  @@unique([insumoId, sucursalId])
+}
+
+model Producto {
+  id        Int          @id @default(autoincrement())
+  nombre    String
+  tipo      TipoProducto
+  precio    Decimal      @db.Decimal(10, 2) // precio de venta con IVA incluido
+  activo    Boolean      @default(true)
+
+  categoriaId     Int
+  categoria       Categoria @relation(fields: [categoriaId], references: [id])
+  insumoReventaId Int?      // solo si tipo = REVENTA
+  insumoReventa   Insumo?   @relation(fields: [insumoReventaId], references: [id])
+
+  receta        RecetaItem[]
+  ventaDetalles VentaDetalle[]
+}
+
+// Receta: ingredientes que descuenta 1 unidad vendida del producto
+model RecetaItem {
+  id       Int     @id @default(autoincrement())
+  cantidad Decimal @db.Decimal(12, 3)
+
+  productoId Int
+  producto   Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  insumoId   Int
+  insumo     Insumo   @relation(fields: [insumoId], references: [id])
+
+  @@unique([productoId, insumoId])
+}
+
+// Kardex: todo cambio de stock queda registrado
+model MovimientoInventario {
+  id         Int            @id @default(autoincrement())
+  tipo       TipoMovimiento
+  cantidad   Decimal        @db.Decimal(14, 3) // positivo entra, negativo sale
+  referencia String?        // ej. "VENTA:123", "COMPRA:45"
+  fecha      DateTime       @default(now())
+
+  insumoId   Int
+  insumo     Insumo         @relation(fields: [insumoId], references: [id])
+  sucursalId Int
+  sucursal   Sucursal       @relation(fields: [sucursalId], references: [id])
+}
+
+// ───────── COMPRAS Y PROVEEDORES (Johann) ─────────
+model Proveedor {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  nit         String?  @unique
+  nrc         String?
+  telefono    String?
+  email       String?
+  diasCredito Int      @default(0)
+  activo      Boolean  @default(true)
+
+  compras     Compra[]
+}
+
+model Compra {
+  id              Int           @id @default(autoincrement())
+  numeroDocumento String        // número de la factura del proveedor
+  fecha           DateTime      @default(now())
+  condicion       CondicionPago
+  subtotal        Decimal       @db.Decimal(12, 2)
+  iva             Decimal       @db.Decimal(12, 2)
+  total           Decimal       @db.Decimal(12, 2)
+
+  proveedorId     Int
+  proveedor       Proveedor     @relation(fields: [proveedorId], references: [id])
+  sucursalId      Int
+  sucursal        Sucursal      @relation(fields: [sucursalId], references: [id])
+
+  detalles        CompraDetalle[]
+  cuenta          CuentaPorPagar?
+
+  @@unique([proveedorId, numeroDocumento])
+}
+
+model CompraDetalle {
+  id            Int     @id @default(autoincrement())
+  cantidad      Decimal @db.Decimal(14, 3)
+  costoUnitario Decimal @db.Decimal(12, 4)
+  subtotal      Decimal @db.Decimal(12, 2)
+
+  compraId      Int
+  compra        Compra  @relation(fields: [compraId], references: [id], onDelete: Cascade)
+  insumoId      Int
+  insumo        Insumo  @relation(fields: [insumoId], references: [id])
+}
+
+model CuentaPorPagar {
+  id               Int          @id @default(autoincrement())
+  monto            Decimal      @db.Decimal(12, 2)
+  saldo            Decimal      @db.Decimal(12, 2)
+  fechaVencimiento DateTime
+  estado           EstadoCuenta @default(PENDIENTE)
+
+  compraId         Int          @unique
+  compra           Compra       @relation(fields: [compraId], references: [id])
+  abonos           Abono[]
+}
+
+model Abono {
+  id        Int       @id @default(autoincrement())
+  monto     Decimal   @db.Decimal(12, 2)
+  fecha     DateTime  @default(now())
+  medioPago MedioPago
+  nota      String?
+
+  cuentaId  Int
+  cuenta    CuentaPorPagar @relation(fields: [cuentaId], references: [id])
+  usuarioId Int
+  usuario   Usuario        @relation(fields: [usuarioId], references: [id])
+}
+
+// ───────── CAJA Y TURNOS (Ari) ─────────
+model Turno {
+  id               Int         @id @default(autoincrement())
+  estado           EstadoTurno @default(ABIERTO)
+  fechaApertura    DateTime    @default(now())
+  fechaCierre      DateTime?
+  montoInicial     Decimal     @db.Decimal(12, 2)
+
+  // Calculado por el sistema al cerrar
+  esperadoEfectivo Decimal?    @db.Decimal(12, 2)
+  esperadoTarjeta  Decimal?    @db.Decimal(12, 2)
+  esperadoDigital  Decimal?    @db.Decimal(12, 2) // Bitcoin + Chivo
+  // Contado por el cajero al cerrar
+  contadoEfectivo  Decimal?    @db.Decimal(12, 2)
+  contadoTarjeta   Decimal?    @db.Decimal(12, 2)
+  contadoDigital   Decimal?    @db.Decimal(12, 2)
+  observaciones    String?
+
+  sucursalId Int
+  sucursal   Sucursal @relation(fields: [sucursalId], references: [id])
+  usuarioId  Int
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+
+  ventas     Venta[]
+}
+
+// ───────── VENTAS Y FACTURACIÓN (Meg) / POS (Medrano) ─────────
+model Cliente {
+  id           Int     @id @default(autoincrement())
+  nombre       String
+  nit          String? @unique
+  nrc          String?
+  giro         String?
+  direccion    String?
+  telefono
