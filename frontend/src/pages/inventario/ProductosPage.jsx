@@ -1,19 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Alert, Button, Col, Container, Form, Input, Row, Table } from 'reactstrap';
-import { crearProducto, editarProducto, eliminarProducto, getProductos } from '../../api/inventarioApi';
+// Cambio: también se cargan insumos para elegir el de reventa
+import { crearProducto, editarProducto, eliminarProducto, getInsumos, getProductos } from '../../api/inventarioApi';
 
-const VACIO = { nombre: '', categoria: '', precio: '', tipo: 'ELABORADO', stockActual: '', stockMinimo: '' };
+// Cambio: sin stock propio; REVENTA usa insumoReventaId
+const VACIO = { nombre: '', categoria: '', precio: '', tipo: 'ELABORADO', insumoReventaId: '' };
 
 function ProductosPage() {
   const [productos, setProductos] = useState([]);
+  const [insumos, setInsumos] = useState([]);
   const [form, setForm] = useState(VACIO);
   const [editandoId, setEditandoId] = useState(null);
   const [error, setError] = useState('');
 
   const cargar = async () => {
     try {
-      setProductos(await getProductos());
+      const [listaProductos, listaInsumos] = await Promise.all([getProductos(), getInsumos()]);
+      setProductos(listaProductos);
+      setInsumos(listaInsumos);
     } catch (err) {
       setError(err.response?.data?.message || 'No se pudieron cargar los productos');
     }
@@ -40,7 +45,8 @@ function ProductosPage() {
 
   const editar = (p) => {
     setEditandoId(p.id);
-    setForm({ nombre: p.nombre, categoria: p.categoria, precio: p.precio, tipo: p.tipo, stockActual: p.stockActual, stockMinimo: p.stockMinimo });
+    // Cambio: categoría ahora es un objeto { id, nombre }
+    setForm({ nombre: p.nombre, categoria: p.categoria.nombre, precio: p.precio, tipo: p.tipo, insumoReventaId: p.insumoReventaId ?? '' });
   };
 
   const eliminar = async (id) => {
@@ -69,12 +75,16 @@ function ProductosPage() {
               <option value="REVENTA">Reventa</option>
             </Input>
           </Col>
-          {/* Solo los de reventa tienen stock propio */}
+          {/* Cambio: reventa elige el insumo que descuenta (antes era stock propio) */}
           {form.tipo === 'REVENTA' && (
-            <>
-              <Col md="1"><Input name="stockActual" type="number" placeholder="Stock" value={form.stockActual} onChange={cambiar} /></Col>
-              <Col md="1"><Input name="stockMinimo" type="number" placeholder="Mín." value={form.stockMinimo} onChange={cambiar} /></Col>
-            </>
+            <Col md="2">
+              <Input type="select" name="insumoReventaId" value={form.insumoReventaId} onChange={cambiar} required>
+                <option value="">Insumo...</option>
+                {insumos.map((i) => (
+                  <option key={i.id} value={i.id}>{i.nombre}</option>
+                ))}
+              </Input>
+            </Col>
           )}
           <Col md="1"><Button color="primary" type="submit">{editandoId ? 'Guardar' : 'Agregar'}</Button></Col>
         </Row>
@@ -82,16 +92,16 @@ function ProductosPage() {
 
       <Table bordered hover>
         <thead>
-          <tr><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Tipo</th><th>Stock</th><th></th></tr>
+          <tr><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Tipo</th><th></th></tr>
         </thead>
         <tbody>
           {productos.map((p) => (
             <tr key={p.id}>
               <td>{p.nombre}</td>
-              <td>{p.categoria}</td>
+              {/* Cambio: se muestra el nombre de la categoría y el insumo de reventa */}
+              <td>{p.categoria.nombre}</td>
               <td>${Number(p.precio).toFixed(2)}</td>
-              <td>{p.tipo}</td>
-              <td>{p.tipo === 'REVENTA' ? Number(p.stockActual) : '—'}</td>
+              <td>{p.tipo === 'REVENTA' ? `Reventa (${p.insumoReventa?.nombre})` : 'Elaborado'}</td>
               <td>
                 {p.tipo === 'ELABORADO' && (
                   <Button size="sm" color="info" className="me-2" tag={Link} to={`/inventario/productos/${p.id}/receta`}>Receta</Button>
