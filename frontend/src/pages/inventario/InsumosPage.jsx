@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Alert, Button, Col, Container, Form, Input, Row, Table } from 'reactstrap';
 import { crearInsumo, editarInsumo, eliminarInsumo, getAlertas, getInsumos } from '../../api/inventarioApi';
 
-const VACIO = { nombre: '', unidad: 'GRAMO', stockActual: '', stockMinimo: '' };
+// Cambio: unidad G/ML/UNIDAD, se agrega costo, stockActual pasa a cantidad
+const VACIO = { nombre: '', unidad: 'G', costoUnitario: '', cantidad: '', stockMinimo: '' };
 
 function InsumosPage() {
   const [insumos, setInsumos] = useState([]);
@@ -41,9 +42,9 @@ function InsumosPage() {
     }
   };
 
-  const editar = (insumo) => {
-    setEditandoId(insumo.id);
-    setForm({ nombre: insumo.nombre, unidad: insumo.unidad, stockActual: insumo.stockActual, stockMinimo: insumo.stockMinimo });
+  const editar = (i) => {
+    setEditandoId(i.id);
+    setForm({ nombre: i.nombre, unidad: i.unidad, costoUnitario: i.costoUnitario, cantidad: i.cantidad, stockMinimo: i.stockMinimo });
   };
 
   const eliminar = async (id) => {
@@ -66,8 +67,9 @@ function InsumosPage() {
         <Alert color="warning">
           <strong>Stock bajo:</strong>
           <ul className="mb-0">
+            {/* Cambio: la alerta trae el insumo adentro y usa cantidad */}
             {alertas.map((a) => (
-              <li key={`${a.nombre}-${a.id}`}>{a.nombre}: quedan {Number(a.stockActual)} (mínimo {Number(a.stockMinimo)})</li>
+              <li key={a.id}>{a.insumo.nombre}: quedan {Number(a.cantidad)} (mínimo {Number(a.stockMinimo)})</li>
             ))}
           </ul>
         </Alert>
@@ -75,34 +77,41 @@ function InsumosPage() {
 
       <Form onSubmit={guardar} className="mb-4">
         <Row className="g-2">
-          <Col md="4"><Input name="nombre" placeholder="Nombre" value={form.nombre} onChange={cambiar} required /></Col>
+          <Col md="3"><Input name="nombre" placeholder="Nombre" value={form.nombre} onChange={cambiar} required /></Col>
           <Col md="2">
             <Input type="select" name="unidad" value={form.unidad} onChange={cambiar}>
-              <option value="GRAMO">Gramos</option>
-              <option value="MILILITRO">Mililitros</option>
+              {/* Cambio: valores del enum de Saúl */}
+              <option value="G">Gramos</option>
+              <option value="ML">Mililitros</option>
               <option value="UNIDAD">Unidades</option>
             </Input>
           </Col>
-          <Col md="2"><Input name="stockActual" type="number" step="any" placeholder="Stock" value={form.stockActual} onChange={cambiar} required /></Col>
+          {/* Nuevo: costo unitario */}
+          <Col md="2"><Input name="costoUnitario" type="number" step="any" placeholder="Costo unit." value={form.costoUnitario} onChange={cambiar} /></Col>
+          {/* Cambio: la cantidad solo al crear; luego cambia con compras y ventas */}
+          {!editandoId && (
+            <Col md="2"><Input name="cantidad" type="number" step="any" placeholder="Stock inicial" value={form.cantidad} onChange={cambiar} /></Col>
+          )}
           <Col md="2"><Input name="stockMinimo" type="number" step="any" placeholder="Mínimo" value={form.stockMinimo} onChange={cambiar} required /></Col>
-          <Col md="2"><Button color="primary" type="submit">{editandoId ? 'Guardar' : 'Agregar'}</Button></Col>
+          <Col md="1"><Button color="primary" type="submit">{editandoId ? 'Guardar' : 'Agregar'}</Button></Col>
         </Row>
       </Form>
 
       <Table bordered hover>
         <thead>
-          <tr><th>Nombre</th><th>Unidad</th><th>Stock</th><th>Mínimo</th><th></th></tr>
+          <tr><th>Nombre</th><th>Unidad</th><th>Stock</th><th>Mínimo</th><th>Costo</th><th></th></tr>
         </thead>
         <tbody>
-          {insumos.map((insumo) => (
-            <tr key={insumo.id}>
-              <td>{insumo.nombre}</td>
-              <td>{insumo.unidad}</td>
-              <td>{Number(insumo.stockActual)}</td>
-              <td>{Number(insumo.stockMinimo)}</td>
+          {insumos.map((i) => (
+            <tr key={i.id}>
+              <td>{i.nombre}</td>
+              <td>{i.unidad}</td>
+              <td>{Number(i.cantidad)}</td>
+              <td>{Number(i.stockMinimo)}</td>
+              <td>${Number(i.costoUnitario)}</td>
               <td>
-                <Button size="sm" color="secondary" className="me-2" onClick={() => editar(insumo)}>Editar</Button>
-                <Button size="sm" color="danger" onClick={() => eliminar(insumo.id)}>Eliminar</Button>
+                <Button size="sm" color="secondary" className="me-2" onClick={() => editar(i)}>Editar</Button>
+                <Button size="sm" color="danger" onClick={() => eliminar(i.id)}>Eliminar</Button>
               </td>
             </tr>
           ))}
