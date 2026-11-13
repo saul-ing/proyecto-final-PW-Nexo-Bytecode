@@ -1,7 +1,12 @@
 import { Router } from 'express';
+// Nuevo: middleware de login de Saúl
+import { autenticar } from '../../middlewares/auth.js';
 import * as inventario from './inventario.controller.js';
 
 const router = Router();
+
+// Nuevo: todas las rutas piden token (de ahí sale la sucursal)
+router.use(autenticar);
 
 router.get('/insumos', inventario.getInsumos);
 router.post('/insumos', inventario.crearInsumo);
