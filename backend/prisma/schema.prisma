@@ -6,3 +6,420 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ───────── ENUMS ─────────
+enum RolUsuario {
+  ADMIN
+  GERENTE
+  CAJERO
+  BARISTA
+}
+
+enum UnidadMedida {
+  G
+  ML
+  UNIDAD
+}
+
+enum TipoProducto {
+  ELABORADO // se fabrica con receta
+  REVENTA   // empacado, descuenta 1 unidad de un insumo
+}
+
+enum TipoDocumento {
+  CF  // Consumidor final
+  CCF // Comprobante de crédito fiscal
+}
+
+enum EstadoVenta {
+  EMITIDA
+  ANULADA
+}
+
+enum MedioPago {
+  EFECTIVO
+  TARJETA
+  BITCOIN
+  CHIVO_WALLET
+}
+
+enum EstadoTurno {
+  ABIERTO
+  CERRADO
+}
+
+enum CondicionPago {
+  CONTADO
+  CREDITO
+}
+
+enum EstadoCuenta {
+  PENDIENTE
+  PARCIAL
+  PAGADA
+}
+
+enum TipoMovimiento {
+  COMPRA
+  VENTA
+  AJUSTE
+  MERMA
+}
+
+enum TipoPlanilla {
+  QUINCENAL
+}
+
+enum EstadoPlanilla {
+  BORRADOR
+  APROBADA
+}
+
+// ───────── BASE (Saúl) ─────────
+model Sucursal {
+  id         Int      @id @default(autoincrement())
+  nombre     String
+  direccion  String?
+  telefono   String?
+  activa     Boolean  @default(true)
+  creadaEn   DateTime @default(now())
+
+  usuarios    Usuario[]
+  empleados   Empleado[]
+  stocks      StockSucursal[]
+  movimientos MovimientoInventario[]
+  compras     Compra[]
+  turnos      Turno[]
+  ventas      Venta[]
+  correlativos Correlativo[]
+  planillas   Planilla[]
+}
+
+model Usuario {
+  id         Int        @id @default(autoincrement())
+  nombre     String
+  email      String     @unique
+  password   String
+  rol        RolUsuario
+  activo     Boolean    @default(true)
+  creadoEn   DateTime   @default(now())
+
+  sucursalId Int?
+  sucursal   Sucursal?  @relation(fields: [sucursalId], references: [id])
+  empleadoId Int?       @unique
+  empleado   Empleado?  @relation(fields: [empleadoId], references: [id])
+
+  turnos     Turno[]
+  ventas     Venta[]
+  abonos     Abono[]
+}
+
+// ───────── INVENTARIO Y RECETAS (Vega) ─────────
+model Categoria {
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique
+  productos Producto[]
+}
+
+model Insumo {
+  id            Int          @id @default(autoincrement())
+  nombre        String       @unique
+  unidad        UnidadMedida
+  costoUnitario Decimal      @default(0) @db.Decimal(12, 4)
+  activo        Boolean      @default(true)
+
+  stocks          StockSucursal[]
+  recetaItems     RecetaItem[]
+  productosReventa Producto[]
+  compraDetalles  CompraDetalle[]
+  movimientos     MovimientoInventario[]
+}
+
+// Stock por sucursal + mínimo para alertas
+model StockSucursal {
+  id          Int      @id @default(autoincrement())
+  cantidad    Decimal  @default(0) @db.Decimal(14, 3)
+  stockMinimo Decimal  @default(0) @db.Decimal(14, 3)
+
+  insumoId    Int
+  insumo      Insumo   @relation(fields: [insumoId], references: [id])
+  sucursalId  Int
+  sucursal    Sucursal @relation(fields: [sucursalId], references: [id])
+
+  @@unique([insumoId, sucursalId])
+}
+
+model Producto {
+  id        Int          @id @default(autoincrement())
+  nombre    String
+  tipo      TipoProducto
+  precio    Decimal      @db.Decimal(10, 2) // precio de venta con IVA incluido
+  activo    Boolean      @default(true)
+
+  categoriaId     Int
+  categoria       Categoria @relation(fields: [categoriaId], references: [id])
+  insumoReventaId Int?      // solo si tipo = REVENTA
+  insumoReventa   Insumo?   @relation(fields: [insumoReventaId], references: [id])
+
+  receta        RecetaItem[]
+  ventaDetalles VentaDetalle[]
+}
+
+// Receta: ingredientes que descuenta 1 unidad vendida del producto
+model RecetaItem {
+  id       Int     @id @default(autoincrement())
+  cantidad Decimal @db.Decimal(12, 3)
+
+  productoId Int
+  producto   Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  insumoId   Int
+  insumo     Insumo   @relation(fields: [insumoId], references: [id])
+
+  @@unique([productoId, insumoId])
+}
+
+// Kardex: todo cambio de stock queda registrado
+model MovimientoInventario {
+  id         Int            @id @default(autoincrement())
+  tipo       TipoMovimiento
+  cantidad   Decimal        @db.Decimal(14, 3) // positivo entra, negativo sale
+  referencia String?        // ej. "VENTA:123", "COMPRA:45"
+  fecha      DateTime       @default(now())
+
+  insumoId   Int
+  insumo     Insumo         @relation(fields: [insumoId], references: [id])
+  sucursalId Int
+  sucursal   Sucursal       @relation(fields: [sucursalId], references: [id])
+}
+
+// ───────── COMPRAS Y PROVEEDORES (Johann) ─────────
+model Proveedor {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  nit         String?  @unique
+  nrc         String?
+  telefono    String?
+  email       String?
+  diasCredito Int      @default(0)
+  activo      Boolean  @default(true)
+
+  compras     Compra[]
+}
+
+model Compra {
+  id              Int           @id @default(autoincrement())
+  numeroDocumento String        // número de la factura del proveedor
+  fecha           DateTime      @default(now())
+  condicion       CondicionPago
+  subtotal        Decimal       @db.Decimal(12, 2)
+  iva             Decimal       @db.Decimal(12, 2)
+  total           Decimal       @db.Decimal(12, 2)
+
+  proveedorId     Int
+  proveedor       Proveedor     @relation(fields: [proveedorId], references: [id])
+  sucursalId      Int
+  sucursal        Sucursal      @relation(fields: [sucursalId], references: [id])
+
+  detalles        CompraDetalle[]
+  cuenta          CuentaPorPagar?
+
+  @@unique([proveedorId, numeroDocumento])
+}
+
+model CompraDetalle {
+  id            Int     @id @default(autoincrement())
+  cantidad      Decimal @db.Decimal(14, 3)
+  costoUnitario Decimal @db.Decimal(12, 4)
+  subtotal      Decimal @db.Decimal(12, 2)
+
+  compraId      Int
+  compra        Compra  @relation(fields: [compraId], references: [id], onDelete: Cascade)
+  insumoId      Int
+  insumo        Insumo  @relation(fields: [insumoId], references: [id])
+}
+
+model CuentaPorPagar {
+  id               Int          @id @default(autoincrement())
+  monto            Decimal      @db.Decimal(12, 2)
+  saldo            Decimal      @db.Decimal(12, 2)
+  fechaVencimiento DateTime
+  estado           EstadoCuenta @default(PENDIENTE)
+
+  compraId         Int          @unique
+  compra           Compra       @relation(fields: [compraId], references: [id])
+  abonos           Abono[]
+}
+
+model Abono {
+  id        Int       @id @default(autoincrement())
+  monto     Decimal   @db.Decimal(12, 2)
+  fecha     DateTime  @default(now())
+  medioPago MedioPago
+  nota      String?
+
+  cuentaId  Int
+  cuenta    CuentaPorPagar @relation(fields: [cuentaId], references: [id])
+  usuarioId Int
+  usuario   Usuario        @relation(fields: [usuarioId], references: [id])
+}
+
+// ───────── CAJA Y TURNOS (Ari) ─────────
+model Turno {
+  id               Int         @id @default(autoincrement())
+  estado           EstadoTurno @default(ABIERTO)
+  fechaApertura    DateTime    @default(now())
+  fechaCierre      DateTime?
+  montoInicial     Decimal     @db.Decimal(12, 2)
+
+  // Calculado por el sistema al cerrar
+  esperadoEfectivo Decimal?    @db.Decimal(12, 2)
+  esperadoTarjeta  Decimal?    @db.Decimal(12, 2)
+  esperadoDigital  Decimal?    @db.Decimal(12, 2) // Bitcoin + Chivo
+  // Contado por el cajero al cerrar
+  contadoEfectivo  Decimal?    @db.Decimal(12, 2)
+  contadoTarjeta   Decimal?    @db.Decimal(12, 2)
+  contadoDigital   Decimal?    @db.Decimal(12, 2)
+  observaciones    String?
+
+  sucursalId Int
+  sucursal   Sucursal @relation(fields: [sucursalId], references: [id])
+  usuarioId  Int
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+
+  ventas     Venta[]
+}
+
+// ───────── VENTAS Y FACTURACIÓN (Meg) / POS (Medrano) ─────────
+model Cliente {
+  id           Int     @id @default(autoincrement())
+  nombre       String
+  nit          String? @unique
+  nrc          String?
+  giro         String?
+  direccion    String?
+  telefono     String?
+  email        String?
+
+  ventas       Venta[]
+}
+
+// Último correlativo emitido por sucursal y tipo de documento
+model Correlativo {
+  id         Int           @id @default(autoincrement())
+  tipo       TipoDocumento
+  ultimo     Int           @default(0)
+
+  sucursalId Int
+  sucursal   Sucursal      @relation(fields: [sucursalId], references: [id])
+
+  @@unique([sucursalId, tipo])
+}
+
+model Venta {
+  id          Int           @id @default(autoincrement())
+  tipo        TipoDocumento
+  correlativo Int
+  fecha       DateTime      @default(now())
+  subtotal    Decimal       @db.Decimal(12, 2) // base sin IVA
+  iva         Decimal       @db.Decimal(12, 2) // 13%
+  total       Decimal       @db.Decimal(12, 2)
+  estado      EstadoVenta   @default(EMITIDA)
+
+  sucursalId  Int
+  sucursal    Sucursal      @relation(fields: [sucursalId], references: [id])
+  turnoId     Int
+  turno       Turno         @relation(fields: [turnoId], references: [id])
+  usuarioId   Int
+  usuario     Usuario       @relation(fields: [usuarioId], references: [id])
+  clienteId   Int?          // obligatorio solo para CCF
+  cliente     Cliente?      @relation(fields: [clienteId], references: [id])
+
+  detalles    VentaDetalle[]
+  pagos       Pago[]
+
+  @@unique([sucursalId, tipo, correlativo])
+}
+
+model VentaDetalle {
+  id             Int     @id @default(autoincrement())
+  cantidad       Int
+  precioUnitario Decimal @db.Decimal(10, 2)
+  subtotal       Decimal @db.Decimal(12, 2)
+
+  ventaId        Int
+  venta          Venta    @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  productoId     Int
+  producto       Producto @relation(fields: [productoId], references: [id])
+}
+
+// Pagos mixtos: una venta puede tener varios pagos
+model Pago {
+  id         Int       @id @default(autoincrement())
+  medio      MedioPago
+  monto      Decimal   @db.Decimal(12, 2)
+  referencia String?
+
+  ventaId    Int
+  venta      Venta     @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+}
+
+// ───────── RRHH Y PLANILLA (Guarita) ─────────
+model Empleado {
+  id             Int      @id @default(autoincrement())
+  nombre         String
+  dui            String   @unique
+  nit            String?
+  numeroIsss     String?
+  numeroAfp      String?
+  cargo          String   // Barista, Cajero, Gerente...
+  salarioMensual Decimal  @db.Decimal(10, 2)
+  fechaIngreso   DateTime
+  activo         Boolean  @default(true)
+
+  sucursalId     Int
+  sucursal       Sucursal @relation(fields: [sucursalId], references: [id])
+
+  usuario        Usuario?
+  planillas      PlanillaDetalle[]
+}
+
+model Planilla {
+  id          Int            @id @default(autoincrement())
+  tipo        TipoPlanilla   @default(QUINCENAL)
+  fechaInicio DateTime
+  fechaFin    DateTime
+  estado      EstadoPlanilla @default(BORRADOR)
+  creadaEn    DateTime       @default(now())
+
+  sucursalId  Int?           // null = todas las sucursales
+  sucursal    Sucursal?      @relation(fields: [sucursalId], references: [id])
+
+  detalles    PlanillaDetalle[]
+}
+
+model PlanillaDetalle {
+  id               Int     @id @default(autoincrement())
+  salarioBruto     Decimal @db.Decimal(10, 2)
+  isss             Decimal @db.Decimal(10, 2) // 3%
+  afp              Decimal @db.Decimal(10, 2) // 7.25%
+  renta            Decimal @db.Decimal(10, 2)
+  otrasDeducciones Decimal @default(0) @db.Decimal(10, 2)
+  salarioNeto      Decimal @db.Decimal(10, 2)
+
+  planillaId       Int
+  planilla         Planilla @relation(fields: [planillaId], references: [id], onDelete: Cascade)
+  empleadoId       Int
+  empleado         Empleado @relation(fields: [empleadoId], references: [id])
+
+  @@unique([planillaId, empleadoId])
+}
+
+// Tabla de retención de renta (se carga en el seed con los valores oficiales vigentes)
+model TramoRenta {
+  id          Int      @id @default(autoincrement())
+  desde       Decimal  @db.Decimal(10, 2)
+  hasta       Decimal? @db.Decimal(10, 2) // null = sin límite
+  porcentaje  Decimal  @db.Decimal(5, 2)  // % sobre el exceso
+  sobreExceso Decimal  @db.Decimal(10, 2) // exceso sobre este monto
+  cuotaFija   Decimal  @db.Decimal(10, 2)
+}
