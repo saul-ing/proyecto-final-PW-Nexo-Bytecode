@@ -1,44 +1,58 @@
+// Cambio: se usa AppError de Saúl para los errores con código HTTP
+import { AppError } from '../../utils/AppError.js';
+
 // Funciones de stock que usan otros módulos. Reciben `tx` porque se llaman
 // dentro de una transacción ($transaction): si algo falla, se revierte todo.
 
 // Para Meg (Ventas). items = [{ productoId, cantidad }]
-// ELABORADO: resta cada insumo de su receta. REVENTA: resta del producto.
-export async function descontarStock(tx, items) {
+// ELABORADO: descuenta cada insumo de su receta.
+// REVENTA:   descuenta 1 unidad de su insumoReventa por cada producto vendido.
+// Cambio: ahora recibe sucursalId (el stock es por sucursal) y referencia para el kardex
+export async function descontarStock(tx, sucursalId, items, referencia) {
   for (const item of items) {
     const producto = await tx.producto.findUnique({
       where: { id: item.productoId },
-      include: { receta: { include: { insumo: true } } },
+      include: { receta: true },
     });
 
-    if (producto.tipo === 'REVENTA') {
-      await restar(tx, 'producto', producto.id, item.cantidad, producto.nombre);
-    } else {
-      for (const linea of producto.receta) {
-        await restar(tx, 'insumo', linea.insumoId, Number(linea.cantidad) * item.cantidad, linea.insumo.nombre);
+    // Cambio: REVENTA ya no tiene stock propio, descuenta 1 de su insumo
+    const lineas =
+      producto.tipo === 'REVENTA'
+        ? [{ insumoId: producto.insumoReventaId, cantidad: 1 }]
+        : producto.receta;
+
+    for (const linea of lineas) {
+      const consumo = Number(linea.cantidad) * item.cantidad;
+
+      // Resta solo si hay suficiente (gte = mayor o igual)
+      // Cambio: se resta en StockSucursal (antes era stockActual del insumo)
+      const resultado = await tx.stockSucursal.updateMany({
+        where: { insumoId: linea.insumoId, sucursalId, cantidad: { gte: consumo } },
+        data: { cantidad: { decrement: consumo } },
+      });
+      if (resultado.count === 0) {
+        throw new AppError(`Stock insuficiente para ${producto.nombre}`, 409);
       }
+
+      // Nuevo: cada salida se registra en el kardex
+      await tx.movimientoInventario.create({
+        data: { tipo: 'VENTA', cantidad: -consumo, referencia, insumoId: linea.insumoId, sucursalId },
+      });
     }
   }
 }
 
-// Resta solo si hay suficiente stock (gte = mayor o igual). Si no alcanza, lanza error 409.
-async function restar(tx, modelo, id, cantidad, nombre) {
-  const resultado = await tx[modelo].updateMany({
-    where: { id, stockActual: { gte: cantidad } },
-    data: { stockActual: { decrement: cantidad } },
+// Para Johann (Compras): suma stock de un insumo en la sucursal.
+// Cambio: una sola función; upsert crea el stock si la sucursal aún no lo tiene
+export async function sumarStock(tx, sucursalId, insumoId, cantidad, referencia) {
+  await tx.stockSucursal.upsert({
+    where: { insumoId_sucursalId: { insumoId, sucursalId } },
+    create: { insumoId, sucursalId, cantidad },
+    update: { cantidad: { increment: cantidad } },
   });
 
-  if (resultado.count === 0) {
-    const error = new Error(`Stock insuficiente de ${nombre}`);
-    error.status = 409;
-    throw error;
-  }
-}
-
-// Para Johann (Compras): suma stock a un insumo o a un producto de reventa.
-export async function sumarStockInsumo(tx, insumoId, cantidad) {
-  return tx.insumo.update({ where: { id: insumoId }, data: { stockActual: { increment: cantidad } } });
-}
-
-export async function sumarStockProducto(tx, productoId, cantidad) {
-  return tx.producto.update({ where: { id: productoId }, data: { stockActual: { increment: cantidad } } });
+  // Nuevo: la entrada se registra en el kardex
+  await tx.movimientoInventario.create({
+    data: { tipo: 'COMPRA', cantidad, referencia, insumoId, sucursalId },
+  });
 }
