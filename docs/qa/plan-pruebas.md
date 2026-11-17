@@ -32,3 +32,5 @@ Preparación: seguir despliegue-local.md, cargar fixtures, autenticar por API, c
 | ENT01 / P1 | Entregables completos | Revisar matriz, evidencias, Excel, IEEE, manual e historial | Sin resultados inventados, autores confirmados y declaración IA |
 
 Pruebas automatizadas: `npm run qa:test` valida contrato HTTP de health, 404, login vacío y rechazo de tokens sin acceder a la DB. `npm run qa:fixtures` valida integridad del catálogo preparado, no la carga en PostgreSQL. Las pruebas financieras y E2E requieren módulos integrados; usar esta tabla como guion, sin inventar endpoints.
+
+Ampliación automatizada de API02: se comprueban las 11 operaciones de inventario sin token y /auth/me con JWT expirado, firma ajena, Bearer vacío y esquema Basic. Esperado 401 sin datos de usuario ni stack. Esto no valida permisos de usuarios autenticados ni aislamiento real de sucursal. Consultar `npm run qa:entorno` para pendientes de configuración antes de pruebas con base.
