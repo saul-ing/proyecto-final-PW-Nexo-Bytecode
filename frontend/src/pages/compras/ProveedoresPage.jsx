@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { crearProveedor, editarProveedor, eliminarProveedor, getProveedores } from '../../api/comprasApi';
+import EstadoCuentaProveedor from './EstadoCuentaProveedor';
 
 const VACIO = { nombre: '', nit: '', nrc: '', telefono: '', email: '', diasCredito: 0 };
 
@@ -14,6 +15,7 @@ function ProveedoresPage() {
   const [editandoId, setEditandoId] = useState(null);
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [estadoCuentaId, setEstadoCuentaId] = useState(null); // proveedor abierto en "Estado de cuenta"
 
   const cargar = () =>
     getProveedores()
@@ -140,6 +142,7 @@ function ProveedoresPage() {
                 <td className="p-2">{p.email || '-'}</td>
                 <td className="p-2">{p.diasCredito === 0 ? 'Contado' : `${p.diasCredito} días`}</td>
                 <td className="p-2 text-right whitespace-nowrap">
+                  <button onClick={() => setEstadoCuentaId(p.id)} className="mr-2 rounded border border-amber-700 px-3 py-1 text-amber-800 hover:bg-amber-50">Estado de cuenta</button>
                   <button onClick={() => editar(p)} className="mr-2 rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">Editar</button>
                   <button onClick={() => eliminar(p)} className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">Desactivar</button>
                 </td>
@@ -151,6 +154,8 @@ function ProveedoresPage() {
           </tbody>
         </table>
       </div>
+
+      {estadoCuentaId && <EstadoCuentaProveedor proveedorId={estadoCuentaId} onCerrar={() => setEstadoCuentaId(null)} />}
     </div>
   );
 }
