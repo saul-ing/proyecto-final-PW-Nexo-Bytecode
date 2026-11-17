@@ -4,6 +4,8 @@ import { getInsumos } from '../../api/inventarioApi';
 
 const IVA = 0.13;
 const dinero = (n) => `$${Number(n ?? 0).toFixed(2)}`;
+// El costo por g o ml puede tener 4 decimales (ej. $0.0011)
+const costo = (n) => `$${Number(n ?? 0)}`;
 const fecha = (f) => (f ? new Date(f).toLocaleDateString('es-SV') : '-');
 // Fecha local en formato YYYY-MM-DD (toISOString daría la de UTC)
 const hoy = () => new Date().toLocaleDateString('en-CA');
@@ -209,7 +211,7 @@ function ComprasPage() {
             <ul className="my-3 divide-y divide-gray-200 text-sm">
               {detalle.detalles.map((d) => (
                 <li key={d.id} className="flex justify-between py-1">
-                  <span>{d.insumo.nombre}: {Number(d.cantidad)} {d.insumo.unidad} × {dinero(d.costoUnitario)}</span>
+                  <span>{d.insumo.nombre}: {Number(d.cantidad)} {d.insumo.unidad} × {costo(d.costoUnitario)}</span>
                   <span>{dinero(d.subtotal)}</span>
                 </li>
               ))}
