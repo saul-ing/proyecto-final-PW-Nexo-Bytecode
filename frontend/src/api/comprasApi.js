@@ -14,6 +14,8 @@ export const getProveedores = () => api.get('/proveedores').then((r) => r.data.p
 export const crearProveedor = (datos) => api.post('/proveedores', datos).then((r) => r.data.proveedor);
 export const editarProveedor = (id, datos) => api.put(`/proveedores/${id}`, datos).then((r) => r.data.proveedor);
 export const eliminarProveedor = (id) => api.delete(`/proveedores/${id}`);
+// Devuelve { proveedor, compras, resumen }
+export const getEstadoCuenta = (id) => api.get(`/proveedores/${id}/estado-cuenta`).then((r) => r.data);
 
 // Compras. datos = { proveedorId, numeroDocumento, fecha, condicion, detalles: [{ insumoId, cantidad, costoUnitario }] }
 export const getCompras = () => api.get('/').then((r) => r.data.compras);
