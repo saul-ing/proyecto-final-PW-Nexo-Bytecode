@@ -49,6 +49,16 @@ export async function eliminarProveedor(req, res, next) {
   }
 }
 
+// GET /api/compras/proveedores/:id/estado-cuenta -> 200 | 404
+export async function getEstadoCuenta(req, res, next) {
+  try {
+    const estado = await comprasService.estadoCuentaProveedor(Number(req.params.id), sucursalDe(req));
+    res.json({ ok: true, ...estado });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // ---------- COMPRAS ----------
 
 // GET /api/compras -> 200

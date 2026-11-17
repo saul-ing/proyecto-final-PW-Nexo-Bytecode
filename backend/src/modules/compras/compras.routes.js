@@ -11,6 +11,7 @@ router.get('/proveedores', compras.getProveedores);
 router.post('/proveedores', compras.crearProveedor);
 router.put('/proveedores/:id', compras.editarProveedor);
 router.delete('/proveedores/:id', compras.eliminarProveedor);
+router.get('/proveedores/:id/estado-cuenta', compras.getEstadoCuenta);
 
 router.get('/cuentas', compras.getCuentas);
 router.post('/cuentas/:id/abonos', compras.crearAbono);
