@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Alert, Button, Col, Container, Form, Input, Row, Table } from 'reactstrap';
 // Cambio: también se cargan insumos para elegir el de reventa
 import { crearProducto, editarProducto, eliminarProducto, getInsumos, getProductos } from '../../api/inventarioApi';
 
 // Cambio: sin stock propio; REVENTA usa insumoReventaId
 const VACIO = { nombre: '', categoria: '', precio: '', tipo: 'ELABORADO', insumoReventaId: '' };
+
+// Clases de Tailwind compartidas con caja y compras
+const inputClase = 'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
+const botonClase = 'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800';
+const botonGris = 'rounded border border-gray-300 px-3 py-1 hover:bg-gray-100';
+const botonRojo = 'rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700';
 
 function ProductosPage() {
   const [productos, setProductos] = useState([]);
@@ -14,18 +19,22 @@ function ProductosPage() {
   const [editandoId, setEditandoId] = useState(null);
   const [error, setError] = useState('');
 
-  const cargar = async () => {
-    try {
-      const [listaProductos, listaInsumos] = await Promise.all([getProductos(), getInsumos()]);
-      setProductos(listaProductos);
-      setInsumos(listaInsumos);
-    } catch (err) {
-      setError(err.response?.data?.message || 'No se pudieron cargar los productos');
-    }
-  };
+  const cargar = () =>
+    Promise.all([getProductos(), getInsumos()])
+      .then(([listaProductos, listaInsumos]) => {
+        setProductos(listaProductos);
+        setInsumos(listaInsumos);
+      })
+      .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los productos'));
 
+  // Carga productos e insumos al abrir la pantalla
   useEffect(() => {
-    cargar();
+    Promise.all([getProductos(), getInsumos()])
+      .then(([listaProductos, listaInsumos]) => {
+        setProductos(listaProductos);
+        setInsumos(listaInsumos);
+      })
+      .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los productos'));
   }, []);
 
   const cambiar = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -59,61 +68,61 @@ function ProductosPage() {
   };
 
   return (
-    <Container className="py-4">
-      <h2>Productos</h2>
+    <div className="mx-auto max-w-5xl p-6">
+      <h1 className="mb-4 text-2xl font-bold">Productos</h1>
 
-      {error && <Alert color="danger" toggle={() => setError('')}>{error}</Alert>}
+      {error && <div className="mb-4 rounded bg-red-100 p-3 text-red-800" onClick={() => setError('')}>{error}</div>}
 
-      <Form onSubmit={guardar} className="mb-4">
-        <Row className="g-2">
-          <Col md="3"><Input name="nombre" placeholder="Nombre" value={form.nombre} onChange={cambiar} required /></Col>
-          <Col md="2"><Input name="categoria" placeholder="Categoría" value={form.categoria} onChange={cambiar} required /></Col>
-          <Col md="2"><Input name="precio" type="number" step="0.01" placeholder="Precio" value={form.precio} onChange={cambiar} required /></Col>
-          <Col md="2">
-            <Input type="select" name="tipo" value={form.tipo} onChange={cambiar}>
+      <form onSubmit={guardar} className="mb-4">
+        <div className="grid gap-2 md:grid-cols-6">
+          <div><input name="nombre" placeholder="Nombre" value={form.nombre} onChange={cambiar} required className={inputClase} /></div>
+          <div><input name="categoria" placeholder="Categoría" value={form.categoria} onChange={cambiar} required className={inputClase} /></div>
+          <div><input name="precio" type="number" step="0.01" placeholder="Precio" value={form.precio} onChange={cambiar} required className={inputClase} /></div>
+          <div>
+            <select name="tipo" value={form.tipo} onChange={cambiar} className={inputClase}>
               <option value="ELABORADO">Elaborado</option>
               <option value="REVENTA">Reventa</option>
-            </Input>
-          </Col>
+            </select>
+          </div>
           {/* Cambio: reventa elige el insumo que descuenta (antes era stock propio) */}
           {form.tipo === 'REVENTA' && (
-            <Col md="2">
-              <Input type="select" name="insumoReventaId" value={form.insumoReventaId} onChange={cambiar} required>
+            <div>
+              <select name="insumoReventaId" value={form.insumoReventaId} onChange={cambiar} required className={inputClase}>
                 <option value="">Insumo...</option>
                 {insumos.map((i) => (
                   <option key={i.id} value={i.id}>{i.nombre}</option>
                 ))}
-              </Input>
-            </Col>
+              </select>
+            </div>
           )}
-          <Col md="1"><Button color="primary" type="submit">{editandoId ? 'Guardar' : 'Agregar'}</Button></Col>
-        </Row>
-      </Form>
+          <div><button type="submit" className={botonClase}>{editandoId ? 'Guardar' : 'Agregar'}</button></div>
+        </div>
+      </form>
 
-      <Table bordered hover>
-        <thead>
-          <tr><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Tipo</th><th></th></tr>
+      <table className="w-full text-left text-sm">
+        <thead className="bg-gray-100">
+          <tr><th className="p-2">Nombre</th><th className="p-2">Categoría</th><th className="p-2">Precio</th><th className="p-2">Tipo</th><th className="p-2"></th></tr>
         </thead>
         <tbody>
           {productos.map((p) => (
-            <tr key={p.id}>
-              <td>{p.nombre}</td>
+            <tr key={p.id} className="border-b border-gray-200">
+              <td className="p-2">{p.nombre}</td>
               {/* Cambio: se muestra el nombre de la categoría y el insumo de reventa */}
-              <td>{p.categoria.nombre}</td>
-              <td>${Number(p.precio).toFixed(2)}</td>
-              <td>{p.tipo === 'REVENTA' ? `Reventa (${p.insumoReventa?.nombre})` : 'Elaborado'}</td>
-              <td>
+              <td className="p-2">{p.categoria.nombre}</td>
+              <td className="p-2">${Number(p.precio).toFixed(2)}</td>
+              <td className="p-2">{p.tipo === 'REVENTA' ? `Reventa (${p.insumoReventa?.nombre})` : 'Elaborado'}</td>
+              <td className="p-2">
                 {p.tipo === 'ELABORADO' && (
-                  <Button size="sm" color="info" className="me-2" tag={Link} to={`/inventario/productos/${p.id}/receta`}>Receta</Button>
+                  <Link to={`/inventario/productos/${p.id}/receta`} className={`${botonGris} mr-2`}>Receta</Link>
                 )}
-                <Button size="sm" color="secondary" className="me-2" onClick={() => editar(p)}>Editar</Button>
-                <Button size="sm" color="danger" onClick={() => eliminar(p.id)}>Eliminar</Button>
+                <button className={`${botonGris} mr-2`} onClick={() => editar(p)}>Editar</button>
+                <button className={botonRojo} onClick={() => eliminar(p.id)}>Eliminar</button>
               </td>
             </tr>
           ))}
         </tbody>
-      </Table>
-    </Container>
+      </table>
+    </div>
   );
 }
 

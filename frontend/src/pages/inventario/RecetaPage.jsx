@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Alert, Button, Col, Container, Input, Row } from 'reactstrap';
 import { getInsumos, getProducto, guardarReceta } from '../../api/inventarioApi';
+
+// Clases de Tailwind compartidas con caja y compras
+const inputClase = 'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
+const botonClase = 'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800';
+const botonGris = 'rounded border border-gray-300 px-3 py-1 hover:bg-gray-100';
+const botonRojo = 'rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700';
 
 // Ruta: /inventario/productos/:id/receta
 function RecetaPage() {
@@ -33,39 +38,39 @@ function RecetaPage() {
     }
   };
 
-  if (!producto) return <Container className="py-4">Cargando...</Container>;
+  if (!producto) return <div className="p-6">Cargando...</div>;
 
   return (
-    <Container className="py-4">
-      <h2>Receta: {producto.nombre}</h2>
-      <p className="text-muted">Cantidades para 1 unidad</p>
+    <div className="mx-auto max-w-5xl p-6">
+      <h1 className="mb-4 text-2xl font-bold">Receta: {producto.nombre}</h1>
+      <p className="mb-4 text-gray-500">Cantidades para 1 unidad</p>
 
-      {mensaje && <Alert color="info">{mensaje}</Alert>}
+      {mensaje && <div className="mb-4 rounded bg-blue-100 p-3 text-blue-800">{mensaje}</div>}
 
       {lineas.map((linea, i) => (
-        <Row key={i} className="g-2 mb-2">
-          <Col md="6">
-            <Input type="select" value={linea.insumoId} onChange={(e) => cambiarLinea(i, 'insumoId', e.target.value)}>
+        <div key={i} className="mb-2 grid gap-2 md:grid-cols-12">
+          <div className="md:col-span-6">
+            <select value={linea.insumoId} onChange={(e) => cambiarLinea(i, 'insumoId', e.target.value)} className={inputClase}>
               <option value="">Seleccionar insumo</option>
               {insumos.map((ins) => (
                 <option key={ins.id} value={ins.id}>{ins.nombre} ({ins.unidad})</option>
               ))}
-            </Input>
-          </Col>
-          <Col md="3">
-            <Input type="number" step="any" placeholder="Cantidad" value={linea.cantidad} onChange={(e) => cambiarLinea(i, 'cantidad', e.target.value)} />
-          </Col>
-          <Col md="3">
-            <Button color="danger" onClick={() => setLineas(lineas.filter((_, j) => j !== i))}>Quitar</Button>
-          </Col>
-        </Row>
+            </select>
+          </div>
+          <div className="md:col-span-3">
+            <input type="number" step="any" placeholder="Cantidad" value={linea.cantidad} onChange={(e) => cambiarLinea(i, 'cantidad', e.target.value)} className={inputClase} />
+          </div>
+          <div className="md:col-span-3">
+            <button className={botonRojo} onClick={() => setLineas(lineas.filter((_, j) => j !== i))}>Quitar</button>
+          </div>
+        </div>
       ))}
 
-      <Button color="secondary" className="me-2" onClick={() => setLineas([...lineas, { insumoId: '', cantidad: '' }])}>
+      <button className={`${botonGris} mr-2`} onClick={() => setLineas([...lineas, { insumoId: '', cantidad: '' }])}>
         + Insumo
-      </Button>
-      <Button color="primary" onClick={guardar}>Guardar receta</Button>
-    </Container>
+      </button>
+      <button className={botonClase} onClick={guardar}>Guardar receta</button>
+    </div>
   );
 }
 
