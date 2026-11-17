@@ -207,3 +207,32 @@ export async function registrarAbono(sucursalId, usuarioId, cuentaId, datos) {
     });
   });
 }
+
+// ---------- ESTADO DE CUENTA ----------
+
+// Compras del proveedor en la sucursal con sus cuentas, abonos y totales
+export async function estadoCuentaProveedor(proveedorId, sucursalId) {
+  const proveedor = await prisma.proveedor.findUnique({ where: { id: proveedorId } });
+  if (!proveedor) throw new AppError('Proveedor no encontrado', 404);
+
+  const compras = await prisma.compra.findMany({
+    where: { proveedorId, sucursalId },
+    include: { cuenta: { include: { abonos: { orderBy: { fecha: 'desc' } } } } },
+    orderBy: [{ fecha: 'desc' }, { id: 'desc' }],
+  });
+
+  const hoy = new Date();
+  const cuentas = compras.filter((c) => c.cuenta).map((c) => c.cuenta);
+  const vencidas = cuentas.filter((c) => c.estado !== 'PAGADA' && c.fechaVencimiento < hoy);
+  const sumar = (lista, campo) => redondear(lista.reduce((suma, x) => suma + Number(x[campo]), 0));
+
+  const resumen = {
+    totalComprado: sumar(compras, 'total'),
+    totalCredito: sumar(cuentas, 'monto'),
+    totalAbonado: sumar(cuentas.flatMap((c) => c.abonos), 'monto'),
+    saldoPendiente: sumar(cuentas, 'saldo'),
+    saldoVencido: sumar(vencidas, 'saldo'),
+  };
+
+  return { proveedor, compras, resumen };
+}
