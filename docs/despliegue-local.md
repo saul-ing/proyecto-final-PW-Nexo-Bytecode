@@ -45,3 +45,7 @@ Para desarrollo usar VITE_API_URL=http://localhost:3000/api, reiniciar Vite y na
 Problemas: 502 = backend apagado/puerto distinto; Prisma no inicializado = prisma generate; P1001 = revisar servicio/host/puerto; autenticación DB = revisar usuario y URL; EADDRINUSE = cerrar solo proceso propio o cambiar puertos; módulo Reactstrap faltante al integrar pantallas = dependencia del equipo frontend. No ejecutar migrate reset, db push ni audit fix --force para resolver a ciegas.
 
 Lista de comprobación: [ ] versión PostgreSQL y commit registrados; [ ] clon nuevo probado; [ ] .env sin secretos versionados; [ ] DB QA correcta; [ ] migraciones aplicadas; [ ] seed repetido sin duplicar; [ ] login y sucursales verificados; [ ] build y QA ejecutados; [ ] módulos integrados y casos P0 aprobados; [ ] saldos y stock verificados; [ ] Excel/manual/IEEE revisados; [ ] demo y apagado ensayados. Todos los elementos sin evidencia siguen pendientes.
+
+## Diagnóstico previo
+
+Ejecutar `npm run qa:entorno` desde la raíz. No modifica archivos, no inicia servicios y no imprime secretos. Retorna 1 si faltan archivos/configuración y 0 cuando pasan sus comprobaciones de archivos. Incluso con salida 0, verificar manualmente PostgreSQL, migraciones, conexión y flujos de negocio; tampoco demuestra que el build refleje el .env actual. Después de cambiar VITE_API_URL siempre recompilar.

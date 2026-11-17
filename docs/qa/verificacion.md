@@ -29,3 +29,14 @@ Entorno real: Windows, Node v24.21.0, npm 11.19.0, Prisma CLI/cliente 6.19.3, Vi
 Durante la primera ejecución falló `npm --prefix backend exec -- prisma generate` porque npm exec no cambió el directorio al esquema. Se reemplazó por scripts npm run ejecutados en backend, se generó cliente y se repitió QA: las 7 comprobaciones pasaron. No se ocultó el fallo inicial ni se atribuyó a lógica de negocio.
 
 Para reproducir, seguir despliegue-local.md y ejecutar `npm run db:generate`, `npm run qa:test`, `npm run build:frontend`, `npm --prefix frontend run lint`. Registrar commit propio con `git rev-parse HEAD` y conservar resultados sin secretos. La compilación por sí sola no valida requisitos académicos ni la interfaz completa.
+
+## Ampliación QA — 2026-11-16
+
+Base de esta ampliación: 70e34bc; misma rama, sin cambios iniciales pendientes. El historial ya muestra origin/feature/qa-documentacion-despliegue; esta sesión no hizo push. Se revisó el autor Andres070212: formato observado emoji + tipo(área): descripción breve. Se conserva la autoría configurada del usuario.
+
+- `npm run qa:test`: APROBADA, 24 comprobaciones, 0 fallos. Incluye las 7 anteriores, 11 operaciones de inventario sin token y 4 escenarios adicionales de token/encabezado, con sus grupos contabilizados por node:test. No se accedió a PostgreSQL.
+- `npm run qa:entorno`: salida 1 esperada por pendientes. Dependencias, cliente generado y frontend compilado presentes. Falta backend/.env y configuración frontend VITE_API_URL=/api. El script no lee secretos del backend ni comprueba conexión DB; comprueba la presencia de archivos y la variable pública del frontend.
+- Consulta de servicios `Get-Service '*postgres*'`: no devolvió servicios en esta máquina; psql no encontrado en PATH. Esto no descarta otra instalación, contenedor o servidor externo. No se inició ni instaló PostgreSQL.
+- Las pruebas de login válido, CRUD persistente, recetas, stocks por sucursal y repetición del fixture siguen NO EJECUTADAS hasta disponer de PostgreSQL QA y configuración. No se tocaron módulos de compañeros.
+
+Siguiente paso: configurar exclusivamente origenes_erp_qa siguiendo la guía Windows, generar cliente, aplicar migraciones versionadas y ejecutar el fixture. Para configurar credenciales se necesita la configuración local del propietario; no se debe inventar acceso ni usar su base de trabajo.

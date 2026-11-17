@@ -17,7 +17,7 @@ SHEETS = {
     "Pruebas": [
         ["ID", "Prueba", "Estado", "Evidencia", "Responsable"],
         ["V01", "npm ci backend/frontend", "APROBADA con avisos", "qa/verificacion.md", "QA: nombre pendiente"],
-        ["V02", "npm run qa:test", "APROBADA", "7 comprobaciones; sin DB", "QA: nombre pendiente"],
+        ["V02", "npm run qa:test", "APROBADA", "24 comprobaciones; sin DB", "QA: nombre pendiente"],
         ["V03", "Build frontend", "APROBADA con alcance limitado", "Solo App plantilla", "QA: nombre pendiente"],
         ["V04", "ESLint frontend", "FALLIDA", "2 errores react-hooks/set-state-in-effect", "Frontend: confirmar responsable"],
         ["V05", "Carga/repetición fixture en PostgreSQL", "NO EJECUTADA", "Requiere DB QA configurada", "QA: nombre pendiente"],
@@ -25,6 +25,7 @@ SHEETS = {
         ["V07", "Clon en otra computadora", "NO EJECUTADA", "Requiere equipo limpio", "Equipo"],
         ["V08", "Servidor local y proxy", "APROBADA", "200 estáticos/health,404 asset,502 API apagada", "QA: nombre pendiente"],
         ["V09", "Barreras fixture y esquema Prisma", "APROBADA", "Destino incorrecto/contraseña corta rechazados; esquema válido", "QA: nombre pendiente"],
+        ["V10", "Diagnóstico del entorno local", "PENDIENTE", "Faltan backend/.env y configuración frontend para proxy", "QA/despliegue: nombre pendiente"],
     ],
     "Incidencias": [["ID", "Severidad", "Descripción", "Estado", "Responsable"]] + [
         ["QA-01", "Alta", "App plantilla sin navegación", "Abierta", "Frontend: confirmar"],
