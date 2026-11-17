@@ -4,6 +4,7 @@ import authRoutes from './modules/auth/auth.routes.js';
 import inventarioRoutes from './modules/inventario/inventario.routes.js';
 import ventasRoutes from './modules/ventas/ventas.routes.js';
 import cajaRoutes from './modules/caja/caja.routes.js';          // 👈 NUEVA
+import comprasRoutes from './modules/compras/compras.routes.js';
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.use('/ventas', ventasRoutes);
 // Cada módulo agrega aquí su línea, por ejemplo:
 // router.use('/proveedores', proveedoresRoutes);
 router.use('/caja', cajaRoutes);
+router.use('/compras', comprasRoutes);
 
 export default router;
