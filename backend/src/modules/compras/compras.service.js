@@ -83,7 +83,8 @@ export function listarCompras(sucursalId) {
   return prisma.compra.findMany({
     where: { sucursalId },
     include: { proveedor: { select: { nombre: true } }, cuenta: true },
-    orderBy: { fecha: 'desc' },
+    // Si hay varias del mismo día, la más reciente primero
+    orderBy: [{ fecha: 'desc' }, { id: 'desc' }],
   });
 }
 
