@@ -6,8 +6,13 @@ const fecha = (f) => (f ? new Date(f).toLocaleString('es-SV') : '-');
 
 const CIERRE_VACIO = { contadoEfectivo: '', contadoTarjeta: '', contadoDigital: '', observaciones: '' };
 
+
 const inputClase =
-  'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
+  'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600 ' +
+  '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none';
+
+// Evita que la rueda del mouse cambie el número por accidente
+const sinRueda = (e) => e.target.blur();
 const botonClase =
   'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-50';
 
@@ -83,6 +88,7 @@ function TurnoPage() {
               required
               value={montoInicial}
               onChange={(e) => setMontoInicial(e.target.value)}
+              onWheel={sinRueda}
               className={inputClase}
             />
           </label>
@@ -108,17 +114,17 @@ function TurnoPage() {
             <label className="block">
               <span className="text-sm text-gray-600">Efectivo contado (incluye el fondo)</span>
               <input type="number" min="0" step="0.01" required name="contadoEfectivo"
-                value={cierre.contadoEfectivo} onChange={cambiarCierre} className={inputClase} />
+                value={cierre.contadoEfectivo} onChange={cambiarCierre} onWheel={sinRueda} className={inputClase} />
             </label>
             <label className="block">
               <span className="text-sm text-gray-600">Tarjetas (total del voucher)</span>
               <input type="number" min="0" step="0.01" required name="contadoTarjeta"
-                value={cierre.contadoTarjeta} onChange={cambiarCierre} className={inputClase} />
+                value={cierre.contadoTarjeta} onChange={cambiarCierre} onWheel={sinRueda} className={inputClase} />
             </label>
             <label className="block">
               <span className="text-sm text-gray-600">Digital (Bitcoin + Chivo Wallet)</span>
               <input type="number" min="0" step="0.01" required name="contadoDigital"
-                value={cierre.contadoDigital} onChange={cambiarCierre} className={inputClase} />
+                value={cierre.contadoDigital} onChange={cambiarCierre} onWheel={sinRueda} className={inputClase} />
             </label>
             <label className="block">
               <span className="text-sm text-gray-600">Observaciones (opcional)</span>
