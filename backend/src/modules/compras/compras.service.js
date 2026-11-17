@@ -154,3 +154,55 @@ export async function registrarCompra(sucursalId, datos) {
     return tx.compra.findUnique({ where: { id: nueva.id }, include: { detalles: true, cuenta: true } });
   });
 }
+
+// ---------- CUENTAS POR PAGAR ----------
+
+const MEDIOS_PAGO = ['EFECTIVO', 'TARJETA', 'BITCOIN', 'CHIVO_WALLET'];
+
+// Lista las cuentas de la sucursal; estado opcional: PENDIENTE, PARCIAL o PAGADA
+export async function listarCuentas(sucursalId, estado) {
+  const cuentas = await prisma.cuentaPorPagar.findMany({
+    where: { compra: { sucursalId }, ...(estado && { estado }) },
+    include: {
+      compra: { select: { numeroDocumento: true, fecha: true, proveedor: { select: { nombre: true } } } },
+    },
+    orderBy: { fechaVencimiento: 'asc' },
+  });
+
+  // Vencida = ya pasó la fecha y todavía debe algo
+  const hoy = new Date();
+  return cuentas.map((c) => ({ ...c, vencida: c.estado !== 'PAGADA' && c.fechaVencimiento < hoy }));
+}
+
+// Hecho con apoyo de IA (Claude)
+// Registra un abono y actualiza saldo y estado de la cuenta
+export async function registrarAbono(sucursalId, usuarioId, cuentaId, datos) {
+  const monto = Number(datos.monto);
+  if (!(monto > 0)) throw new AppError('El monto del abono debe ser mayor a 0');
+  if (!MEDIOS_PAGO.includes(datos.medioPago)) throw new AppError('Medio de pago no válido');
+
+  const cuenta = await prisma.cuentaPorPagar.findFirst({ where: { id: cuentaId, compra: { sucursalId } } });
+  if (!cuenta) throw new AppError('Cuenta por pagar no encontrada', 404);
+  if (cuenta.estado === 'PAGADA') throw new AppError('Esta cuenta ya está pagada', 409);
+
+  return prisma.$transaction(async (tx) => {
+    // Resta solo si el saldo alcanza (evita pagar de más con dos abonos al mismo tiempo)
+    const resultado = await tx.cuentaPorPagar.updateMany({
+      where: { id: cuentaId, saldo: { gte: monto } },
+      data: { saldo: { decrement: monto } },
+    });
+    if (resultado.count === 0) throw new AppError('El abono es mayor al saldo pendiente', 409);
+
+    await tx.abono.create({
+      data: { monto, medioPago: datos.medioPago, nota: datos.nota || null, cuentaId, usuarioId },
+    });
+
+    // Saldo en 0 = PAGADA, si no = PARCIAL
+    const actualizada = await tx.cuentaPorPagar.findUnique({ where: { id: cuentaId } });
+    return tx.cuentaPorPagar.update({
+      where: { id: cuentaId },
+      data: { estado: Number(actualizada.saldo) === 0 ? 'PAGADA' : 'PARCIAL' },
+      include: { abonos: { orderBy: { fecha: 'desc' } } },
+    });
+  });
+}
