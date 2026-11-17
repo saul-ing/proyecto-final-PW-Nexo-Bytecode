@@ -27,20 +27,15 @@ function ComprasPage() {
   const [mensaje, setMensaje] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-  const cargar = async () => {
-    try {
-      const [listaCompras, listaProveedores, listaInsumos] = await Promise.all([
-        getCompras(),
-        getProveedores(),
-        getInsumos(),
-      ]);
-      setCompras(listaCompras);
-      setProveedores(listaProveedores);
-      setInsumos(listaInsumos);
-    } catch (err) {
-      setError(err.response?.data?.message || 'No se pudieron cargar los datos');
-    }
-  };
+  // Pide compras, proveedores e insumos al mismo tiempo
+  const cargar = () =>
+    Promise.all([getCompras(), getProveedores(), getInsumos()])
+      .then(([listaCompras, listaProveedores, listaInsumos]) => {
+        setCompras(listaCompras);
+        setProveedores(listaProveedores);
+        setInsumos(listaInsumos);
+      })
+      .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los datos'));
 
   useEffect(() => {
     cargar();

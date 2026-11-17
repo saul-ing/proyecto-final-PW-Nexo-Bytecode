@@ -15,16 +15,16 @@ function ProveedoresPage() {
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-  const cargar = async () => {
-    try {
-      setProveedores(await getProveedores());
-    } catch (err) {
-      setError(err.response?.data?.message || 'No se pudieron cargar los proveedores');
-    }
-  };
+  const cargar = () =>
+    getProveedores()
+      .then(setProveedores)
+      .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los proveedores'));
 
+  // Carga la lista al abrir la pantalla
   useEffect(() => {
-    cargar();
+    getProveedores()
+      .then(setProveedores)
+      .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los proveedores'));
   }, []);
 
   const cambiar = (e) => setForm({ ...form, [e.target.name]: e.target.value });
