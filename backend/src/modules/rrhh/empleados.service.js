@@ -1,4 +1,4 @@
-import { prisma } from '../../config/prisma.js';
+import { prisma } from '../../config/db.js';
 import { AppError } from '../../utils/AppError.js';
 
 const CAMPOS = ['nombre', 'dui', 'nit', 'numeroIsss', 'numeroAfp', 'cargo', 'salarioMensual', 'fechaIngreso', 'sucursalId'];
