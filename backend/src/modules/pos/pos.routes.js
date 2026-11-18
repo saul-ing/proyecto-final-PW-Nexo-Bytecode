@@ -7,5 +7,6 @@ const router = Router();
 router.use(autenticar, permitirRoles('ADMIN', 'GERENTE', 'CAJERO'));
 
 router.get('/categorias', pos.getCategorias);
+router.get('/productos', pos.getProductos);
 
 export default router;
