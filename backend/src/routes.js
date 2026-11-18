@@ -5,6 +5,7 @@ import inventarioRoutes from './modules/inventario/inventario.routes.js';
 import ventasRoutes from './modules/ventas/ventas.routes.js';
 import cajaRoutes from './modules/caja/caja.routes.js';          // 👈 NUEVA
 import comprasRoutes from './modules/compras/compras.routes.js';
+import posRoutes from './modules/pos/pos.routes.js';
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use('/ventas', ventasRoutes);
 // router.use('/proveedores', proveedoresRoutes);
 router.use('/caja', cajaRoutes);
 router.use('/compras', comprasRoutes);
+router.use('/pos', posRoutes);
 
 export default router;
