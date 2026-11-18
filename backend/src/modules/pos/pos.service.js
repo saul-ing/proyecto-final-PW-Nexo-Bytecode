@@ -1,4 +1,5 @@
 import { prisma } from '../../config/db.js';
+import { AppError } from '../../utils/AppError.js';
 
 // Categorías que tienen al menos un producto activo
 export async function listarCategorias() {
@@ -55,4 +56,30 @@ export async function listarProductos({ sucursalId, categoriaId, buscar }) {
     categoria: p.categoria.nombre,
     disponibles: calcularDisponibles(p, stockPorInsumo),
   }));
+}
+
+// Para el CCF: se busca por nombre o por NIT
+export async function buscarClientes(buscar) {
+  if (!buscar) return [];
+
+  return prisma.cliente.findMany({
+    where: {
+      OR: [
+        { nombre: { contains: buscar, mode: 'insensitive' } },
+        { nit: { contains: buscar } },
+      ],
+    },
+    orderBy: { nombre: 'asc' },
+    take: 10,
+  });
+}
+
+export async function crearCliente({ nombre, nit, nrc, giro, direccion, telefono, email }) {
+  if (!nombre || !nit || !nrc) {
+    throw new AppError('Nombre, NIT y NRC son obligatorios para un CCF', 400);
+  }
+
+  return prisma.cliente.create({
+    data: { nombre, nit, nrc, giro, direccion, telefono, email },
+  });
 }

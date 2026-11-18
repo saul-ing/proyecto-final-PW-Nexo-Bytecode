@@ -32,3 +32,24 @@ export async function getProductos(req, res, next) {
     next(error);
   }
 }
+
+// GET /api/pos/clientes?buscar= -> 200
+export async function getClientes(req, res, next) {
+  try {
+    const buscar = String(req.query.buscar ?? '').trim();
+    const clientes = await posService.buscarClientes(buscar);
+    res.json({ ok: true, clientes });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// POST /api/pos/clientes -> 201 | 400 | 409 (NIT repetido)
+export async function crearCliente(req, res, next) {
+  try {
+    const cliente = await posService.crearCliente(req.body);
+    res.status(201).json({ ok: true, cliente });
+  } catch (error) {
+    next(error);
+  }
+}
