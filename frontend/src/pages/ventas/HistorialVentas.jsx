@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Table, Button, Alert } from "reactstrap";
-import api from '../api/ventasApi';
+import {getVentas} from "../api/ventasApi";
+import VistaFactura from "./VistaFactura";
 
 export default function HistorialVentas() {
     const [ventas, setVentas] = useState([]);
@@ -16,8 +17,8 @@ export default function HistorialVentas() {
         try {
             setLoading(true);
             setMensaje('');
-            const res = await api.get('/ventas');
-            setVentas(res.data.ventas);
+            const lista = await getVentas();
+            setVentas(lista || []);
         } catch (err){
             setMensaje(err.response?.data?.message || 'Ha habido un error al cargar el historial de ventas');
         } finally {
