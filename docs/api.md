@@ -55,3 +55,24 @@ Todo ocurre en una transacción (si algo falla, no se guarda nada):
 
 `resumen` trae: `totalComprado` (contado + crédito), `totalCredito`, `totalAbonado`, `saldoPendiente` y `saldoVencido`.
 Cada compra viene con su `cuenta` y el historial de `abonos` (null si fue de contado).
+
+## POS (catálogo y clientes)
+
+Todas las rutas piden token y rol ADMIN, GERENTE o CAJERO. La sucursal sale del token.
+
+| Método | Ruta | Body / Query | Respuesta |
+|---|---|---|---|
+| GET | /api/pos/categorias | — | 200 `{ ok, categorias }` (solo con productos activos) |
+| GET | /api/pos/productos?categoriaId=&buscar= | filtros opcionales | 200 `{ ok, productos }` · 400 categoría inválida |
+| GET | /api/pos/clientes?buscar= | nombre o NIT | 200 `{ ok, clientes }` (máximo 10) |
+| POST | /api/pos/clientes | `{ nombre, nit, nrc, giro, direccion, telefono, email }` | 201 `{ ok, cliente }` · 400 faltan nombre, NIT o NRC · 409 NIT repetido |
+
+### Productos del POS
+
+Cada producto trae `id, nombre, tipo, precio, categoriaId, categoria, disponibles`. El `precio` ya incluye el IVA.
+
+`disponibles` son las unidades que se pueden vender con el stock de la sucursal: se divide el stock de cada insumo de la receta entre lo que gasta una unidad y se toma el menor. En productos de reventa se usa el stock de su insumo. Un producto sin receta sale con 0.
+
+### Cobro con pagos mixtos
+
+El POS registra la venta con `POST /api/ventas`. Los pagos que se envían deben sumar el total de la venta: si el cliente paga de más en efectivo, el vuelto se resta del monto en efectivo antes de enviarlo. Así el cuadre de caja no queda inflado.
