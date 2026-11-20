@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getVentas } from "../api/ventasApi";
+import { getVentas } from "../../api/ventasApi";
 import VistaFactura from "./VistaFactura";
 
 export default function HistorialVentas() {
