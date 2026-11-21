@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Paleta Orígenes SV */
+  --color-origen-100: #EFF6E0;
+  --color-origen-300: #AEC3B0;
+  --color-origen-500: #598392;
+  --color-origen-700: #124559;
+  --color-origen-950: #01161E;
+
+  /* Los botones y acentos paleta nueva */
+  --color-amber-50: #F7FAEF;
+  --color-amber-100: #EFF6E0;
+  --color-amber-500: #598392;
+  --color-amber-600: #124559;
+  --color-amber-700: #0F3B4C;
+  --color-amber-800: #0A2B38;
+  --color-amber-900: #01161E;
+}
+
+body {
+  background-color: #EFF6E0;
+  color: #01161E;
+}
+
+/* Iconos de Google (Material Symbols) */
+.material-symbols-rounded {
+  font-size: 22px;
+  line-height: 1;
+  user-select: none;
+}

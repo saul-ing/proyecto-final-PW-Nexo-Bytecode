@@ -3,6 +3,7 @@ import { getCategorias, getProductosPos, registrarVenta } from '../../api/posApi
 import { getTurnoActual } from '../../api/cajaApi';
 import { useCarrito } from '../../hooks/useCarrito';
 import { dinero } from '../../utils/formato';
+import Icono from '../../components/Icono';
 import CatalogoProductos from './CatalogoProductos';
 import Carrito from './Carrito';
 import CobroModal from './CobroModal';
@@ -67,46 +68,58 @@ function PosPage() {
     }
   };
 
-  if (cargando) return <div className="p-6">Cargando...</div>;
+  if (cargando) return <div className="p-6 text-gray-500">Cargando...</div>;
 
   return (
-    <div className="mx-auto max-w-6xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Punto de venta</h1>
+    <div>
+      <h1 className="mb-4 flex items-center gap-2 text-2xl font-bold text-origen-950">
+        <Icono nombre="point_of_sale" tamano={28} className="text-origen-500" />
+        Punto de venta
+      </h1>
 
-      {error && <div className="mb-4 rounded bg-red-100 p-3 text-red-800">{error}</div>}
+      {error && (
+        <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-50 p-3 text-red-700">
+          <Icono nombre="error" tamano={20} />
+          {error}
+        </div>
+      )}
 
       {!turno && (
-        <div className="mb-4 rounded bg-amber-100 p-3 text-amber-900">
-          No hay un turno abierto. Abre caja en Caja y turno para poder vender.
+        <div className="mb-4 flex items-center gap-2 rounded-xl bg-yellow-100 p-3 text-yellow-800">
+          <Icono nombre="lock_clock" tamano={20} />
+          No hay un turno abierto. Abre caja en el módulo Caja para poder vender.
         </div>
       )}
 
       {ultimaVenta && (
-        <div className="mb-4 flex items-start justify-between rounded border border-green-200 bg-green-50 p-3 text-green-900">
-          <div>
-            <p className="font-semibold">
-              Venta registrada: {ultimaVenta.tipo} #{ultimaVenta.correlativo} por {dinero(ultimaVenta.total)}
-            </p>
-            {ultimaVenta.cambio > 0 && <p>Cambio entregado: {dinero(ultimaVenta.cambio)}</p>}
+        <div className="mb-4 flex items-start justify-between gap-3 rounded-xl bg-origen-100 p-3 text-origen-950">
+          <div className="flex items-start gap-2">
+            <Icono nombre="check_circle" className="text-origen-700" />
+            <div>
+              <p className="font-semibold">
+                Venta registrada: {ultimaVenta.tipo} #{ultimaVenta.correlativo} por {dinero(ultimaVenta.total)}
+              </p>
+              {ultimaVenta.cambio > 0 && <p className="text-sm">Cambio entregado: {dinero(ultimaVenta.cambio)}</p>}
+            </div>
           </div>
-          <button type="button" onClick={() => setUltimaVenta(null)} className="underline">
-            Cerrar
+          <button type="button" onClick={() => setUltimaVenta(null)} aria-label="Cerrar aviso" className="text-origen-500 hover:text-origen-950">
+            <Icono nombre="close" tamano={20} />
           </button>
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <CatalogoProductos
-            productos={productosFiltrados}
-            categorias={categorias}
-            categoriaId={categoriaId}
-            onCategoria={setCategoriaId}
-            buscar={buscar}
-            onBuscar={setBuscar}
-            onAgregar={carrito.agregar}
-          />
-        </div>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <CatalogoProductos
+          productos={productosFiltrados}
+          categorias={categorias}
+          categoriaId={categoriaId}
+          onCategoria={setCategoriaId}
+          buscar={buscar}
+          onBuscar={setBuscar}
+          items={carrito.items}
+          onAgregar={carrito.agregar}
+          onCambiarCantidad={carrito.cambiarCantidad}
+        />
 
         <Carrito
           items={carrito.items}
