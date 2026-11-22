@@ -7,6 +7,7 @@ import cajaRoutes from './modules/caja/caja.routes.js';          // 👈 NUEVA
 import comprasRoutes from './modules/compras/compras.routes.js';
 import rrhhRoutes from './modules/rrhh/rrhh.routes.js';
 import posRoutes from './modules/pos/pos.routes.js';
+import sucursalesRoutes from './modules/sucursales/sucursales.routes.js';
 
 
 const router = Router();
@@ -22,6 +23,7 @@ router.use('/caja', cajaRoutes);
 router.use('/compras', comprasRoutes);
 router.use('/rrhh', rrhhRoutes);
 router.use('/pos', posRoutes);
+router.use('/sucursales', sucursalesRoutes);
 
 
 export default router;

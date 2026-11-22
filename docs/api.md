@@ -76,3 +76,21 @@ Cada producto trae `id, nombre, tipo, precio, categoriaId, categoria, disponible
 ### Cobro con pagos mixtos
 
 El POS registra la venta con `POST /api/ventas`. Los pagos que se envían deben sumar el total de la venta: si el cliente paga de más en efectivo, el vuelto se resta del monto en efectivo antes de enviarlo. Así el cuadre de caja no queda inflado.
+## Sucursales
+
+| Método | Ruta | Body | Respuesta |
+|---|---|---|---|
+| GET | /api/sucursales | — | 200 `{ ok, sucursales }` (solo activas) · 401 sin token |
+
+Cualquier usuario con sesión puede consultarlas (sirve para selectores, por ejemplo en empleados).
+
+## Datos de prueba (seed)
+
+`npm run db:seed` carga todo y se puede correr varias veces sin duplicar datos. Cada módulo tiene su archivo en `backend/prisma/seeds/`.
+
+- **Sucursales:** Casa Matriz, Santa Tecla y San Miguel.
+- **Usuarios:** `admin`, `gerente`, `cajero` y `barista` `@origenes.sv` (contraseñas en `seeds/base.js`).
+- **Inventario:** 26 insumos con stock en las 3 sucursales, 15 productos elaborados con receta (incluido el Latte Grande del enunciado) y 4 de reventa. La leche de almendra empieza bajo el mínimo para mostrar la alerta.
+- **Clientes:** 3 con NIT y NRC para emitir CCF.
+- **Compras:** 4 proveedores y 4 compras: una de contado y cuentas por pagar pendiente y vencida, parcial y pagada.
+- **RRHH:** 8 empleados repartidos en las sucursales y la tabla de renta quincenal.

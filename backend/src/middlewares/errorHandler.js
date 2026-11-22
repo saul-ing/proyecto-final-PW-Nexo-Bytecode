@@ -16,6 +16,10 @@ export function errorHandler(err, req, res, next) {
   } else if (err.code === 'P2025') {
     status = 404;
     message = 'Registro no encontrado';
+  } else if (err.name === 'PrismaClientValidationError') {
+    // Ej. un id que no es número (/productos/abc): es error del cliente, no del servidor
+    status = 400;
+    message = 'Datos inválidos en la petición';
   }
 
   if (status === 500) {
