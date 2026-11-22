@@ -23,6 +23,10 @@ const cargar = () =>
   getPlanillas()
     .then((lista) => setPlanillas(Array.isArray(lista) ? lista : []))
     .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar las planillas'));
+    
+  useEffect(() => {
+    cargar();
+  }, []);
 
   const cambiar = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
