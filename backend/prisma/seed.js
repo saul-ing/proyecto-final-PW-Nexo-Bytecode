@@ -10,7 +10,7 @@ async function main() {
   const { sucursales } = await seedBase(prisma);
   await seedRrhh(prisma, sucursales);
 
-  console.log('Seed listo: admin@origenes.sv / Admin123!');
+  console.log('Seed listo. Usuarios: admin, gerente, cajero y barista @origenes.sv (ver prisma/seeds/base.js)');
 }
 
 main()
