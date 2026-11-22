@@ -2,6 +2,8 @@ import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import { seedBase } from './seeds/base.js';
 import { seedInventario } from './seeds/inventario.js';
+import { seedClientes } from './seeds/clientes.js';
+import { seedCompras } from './seeds/compras.js';
 import { seedRrhh } from './seeds/rrhh.js';
 
 const prisma = new PrismaClient();
@@ -10,6 +12,8 @@ const prisma = new PrismaClient();
 async function main() {
   const { sucursales } = await seedBase(prisma);
   const { insumos } = await seedInventario(prisma, sucursales);
+  await seedClientes(prisma);
+  await seedCompras(prisma, sucursales, insumos);
   await seedRrhh(prisma, sucursales);
 
   console.log('Seed listo. Usuarios: admin, gerente, cajero y barista @origenes.sv (ver prisma/seeds/base.js)');
