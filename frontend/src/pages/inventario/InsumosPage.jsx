@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
 import { crearInsumo, editarInsumo, eliminarInsumo, getAlertas, getInsumos } from '../../api/inventarioApi';
 
+import Icono from '../../components/Icono';
+import { Alerta, Campo, Encabezado, FilaVacia, Insignia } from '../../components/ui';
+import {
+  botonClase, botonGris, botonRojo, contenedorTabla, filaClase, inputClase,
+  tablaClase, tarjetaClase, tdClase, theadClase, thClase,
+} from '../../components/estilos';
+
 // Cambio: unidad G/ML/UNIDAD, se agrega costo, stockActual pasa a cantidad
 const VACIO = { nombre: '', unidad: 'G', costoUnitario: '', cantidad: '', stockMinimo: '' };
-
-// Clases de Tailwind compartidas con caja y compras
-const inputClase = 'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
-const botonClase = 'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800';
-const botonGris = 'rounded border border-gray-300 px-3 py-1 hover:bg-gray-100';
-const botonRojo = 'rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700';
 
 function InsumosPage() {
   const [insumos, setInsumos] = useState([]);
@@ -66,66 +67,96 @@ function InsumosPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Insumos</h1>
+    <div>
+      <Encabezado icono="inventory_2" titulo="Insumos" descripcion="Materia prima, stock y costos de la sucursal" />
 
-      {error && <div className="mb-4 rounded bg-red-100 p-3 text-red-800" onClick={() => setError('')}>{error}</div>}
+      {error && <Alerta tipo="error" onCerrar={() => setError('')}>{error}</Alerta>}
 
       {/* Panel de alertas de stock mínimo */}
       {alertas.length > 0 && (
-        <div className="mb-4 rounded bg-yellow-100 p-3 text-yellow-800">
+        <Alerta tipo="aviso">
           <strong>Stock bajo:</strong>
           <ul className="ml-5 list-disc">
-            {/* Cambio: la alerta trae el insumo adentro y usa cantidad */}
             {alertas.map((a) => (
               <li key={a.id}>{a.insumo.nombre}: quedan {Number(a.cantidad)} (mínimo {Number(a.stockMinimo)})</li>
             ))}
           </ul>
-        </div>
+        </Alerta>
       )}
 
-      <form onSubmit={guardar} className="mb-4">
-        <div className="grid gap-2 md:grid-cols-6">
-          <div><input name="nombre" placeholder="Nombre" value={form.nombre} onChange={cambiar} required className={inputClase} /></div>
-          <div>
+      <form onSubmit={guardar} className={`${tarjetaClase} mb-6`}>
+        <h3 className="mb-3 font-semibold text-origen-950">{editandoId ? 'Editar insumo' : 'Nuevo insumo'}</h3>
+        <div className="grid items-end gap-3 md:grid-cols-6">
+          <Campo etiqueta="Nombre">
+            <input name="nombre" placeholder="Café de especialidad" value={form.nombre} onChange={cambiar} required className={inputClase} />
+          </Campo>
+          <Campo etiqueta="Unidad">
             <select name="unidad" value={form.unidad} onChange={cambiar} className={inputClase}>
-              {/* Cambio: valores del enum de Saúl */}
               <option value="G">Gramos</option>
               <option value="ML">Mililitros</option>
               <option value="UNIDAD">Unidades</option>
             </select>
-          </div>
-          {/* Nuevo: costo unitario */}
-          <div><input name="costoUnitario" type="number" step="any" placeholder="Costo unit." value={form.costoUnitario} onChange={cambiar} className={inputClase} /></div>
-          {/* Cambio: la cantidad solo al crear; luego cambia con compras y ventas */}
+          </Campo>
+          <Campo etiqueta="Costo unitario">
+            <input name="costoUnitario" type="number" step="any" value={form.costoUnitario} onChange={cambiar} className={inputClase} />
+          </Campo>
+          {/* La cantidad solo al crear; luego cambia con compras y ventas */}
           {!editandoId && (
-            <div><input name="cantidad" type="number" step="any" placeholder="Stock inicial" value={form.cantidad} onChange={cambiar} className={inputClase} /></div>
+            <Campo etiqueta="Stock inicial">
+              <input name="cantidad" type="number" step="any" value={form.cantidad} onChange={cambiar} className={inputClase} />
+            </Campo>
           )}
-          <div><input name="stockMinimo" type="number" step="any" placeholder="Mínimo" value={form.stockMinimo} onChange={cambiar} required className={inputClase} /></div>
-          <div><button type="submit" className={botonClase}>{editandoId ? 'Guardar' : 'Agregar'}</button></div>
+          <Campo etiqueta="Mínimo">
+            <input name="stockMinimo" type="number" step="any" value={form.stockMinimo} onChange={cambiar} required className={inputClase} />
+          </Campo>
+          <button type="submit" className={botonClase}>
+            <Icono nombre={editandoId ? 'save' : 'add'} tamano={20} />
+            {editandoId ? 'Guardar' : 'Agregar'}
+          </button>
         </div>
       </form>
 
-      <table className="w-full text-left text-sm">
-        <thead className="bg-gray-100">
-          <tr><th className="p-2">Nombre</th><th className="p-2">Unidad</th><th className="p-2">Stock</th><th className="p-2">Mínimo</th><th className="p-2">Costo</th><th className="p-2"></th></tr>
-        </thead>
-        <tbody>
-          {insumos.map((i) => (
-            <tr key={i.id} className="border-b border-gray-200">
-              <td className="p-2">{i.nombre}</td>
-              <td className="p-2">{i.unidad}</td>
-              <td className="p-2">{Number(i.cantidad)}</td>
-              <td className="p-2">{Number(i.stockMinimo)}</td>
-              <td className="p-2">${Number(i.costoUnitario)}</td>
-              <td className="p-2">
-                <button className={`${botonGris} mr-2`} onClick={() => editar(i)}>Editar</button>
-                <button className={botonRojo} onClick={() => eliminar(i.id)}>Eliminar</button>
-              </td>
+      <div className={contenedorTabla}>
+        <table className={tablaClase}>
+          <thead className={theadClase}>
+            <tr>
+              <th className={thClase}>Nombre</th>
+              <th className={thClase}>Unidad</th>
+              <th className={thClase}>Stock</th>
+              <th className={thClase}>Mínimo</th>
+              <th className={thClase}>Costo</th>
+              <th className={thClase}></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {insumos.map((i) => {
+              const bajo = Number(i.cantidad) <= Number(i.stockMinimo);
+              return (
+                <tr key={i.id} className={filaClase}>
+                  <td className={`${tdClase} font-medium text-origen-950`}>{i.nombre}</td>
+                  <td className={tdClase}>{i.unidad}</td>
+                  <td className={tdClase}>
+                    {Number(i.cantidad)} {bajo && <Insignia color="rojo">Bajo</Insignia>}
+                  </td>
+                  <td className={tdClase}>{Number(i.stockMinimo)}</td>
+                  <td className={tdClase}>${Number(i.costoUnitario)}</td>
+                  <td className={`${tdClase} whitespace-nowrap text-right`}>
+                    <button type="button" className={`${botonGris} mr-2`} onClick={() => editar(i)}>
+                      <Icono nombre="edit" tamano={18} />
+                      Editar
+                    </button>
+                    <button type="button" className={botonRojo} onClick={() => eliminar(i.id)}>
+                      <Icono nombre="delete" tamano={18} />
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+            {insumos.length === 0 && <FilaVacia columnas={6} texto="No hay insumos registrados" />}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
