@@ -9,6 +9,7 @@ export function AuthProvider({ children }) {
 
   // Al abrir la app: si hay token guardado, recupera al usuario
   useEffect(() => {
+
   if (!localStorage.getItem('token')) return;
   api
     .get('/auth/me')
