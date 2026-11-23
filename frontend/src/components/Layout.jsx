@@ -8,11 +8,11 @@ export default function Layout() {
   const inicial = usuario.nombre?.charAt(0).toUpperCase();
 
   return (
-    <div className="flex h-screen bg-origen-100">
+    <div className="flex h-screen gap-3 bg-origen-100 p-3">
       <Sidebar />
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between px-6 py-4">
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <header className="flex items-center justify-between px-2 pt-1">
           <div className="flex items-center gap-2 text-origen-700">
             <Icono nombre="storefront" />
             <span className="font-semibold">{usuario.sucursal}</span>
@@ -29,10 +29,8 @@ export default function Layout() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto px-6 pb-6">
-          <div className="min-h-full rounded-2xl bg-white p-4 shadow-sm sm:p-6">
-            <Outlet />
-          </div>
+        <main className="flex-1 overflow-auto rounded-3xl bg-white p-4 shadow-sm sm:p-6">
+          <Outlet />
         </main>
       </div>
     </div>
