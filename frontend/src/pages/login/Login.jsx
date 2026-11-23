@@ -3,14 +3,18 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Icono from '../../components/Icono';
 
-const inputClase =
-  'w-full rounded-xl border border-gray-300 py-2.5 pl-10 pr-3 focus:border-origen-700 focus:outline-none focus:ring-2 focus:ring-origen-500';
+const inputBase =
+  'w-full rounded-xl border border-gray-300 py-2.5 pl-10 focus:border-origen-700 focus:outline-none focus:ring-2 focus:ring-origen-500';
+const inputClase = `${inputBase} pr-3`;
+// La contraseña deja espacio a la derecha para el botón del ojo
+const inputPassword = `${inputBase} pr-11`;
 
 export default function Login() {
   const { usuario, login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [verPassword, setVerPassword] = useState(false);
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -82,12 +86,21 @@ export default function Login() {
           <div className="relative mb-6">
             <Icono nombre="lock" className="absolute left-3 top-1/2 -translate-y-1/2 text-origen-500" />
             <input
-              type="password"
+              type={verPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className={inputClase}
+              className={inputPassword}
             />
+            <button
+              type="button"
+              onClick={() => setVerPassword(!verPassword)}
+              aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              title={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-origen-500 transition hover:bg-origen-100 hover:text-origen-700"
+            >
+              <Icono nombre={verPassword ? 'visibility_off' : 'visibility'} tamano={20} />
+            </button>
           </div>
 
           <button
