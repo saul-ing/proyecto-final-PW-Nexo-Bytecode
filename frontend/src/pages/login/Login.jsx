@@ -2,12 +2,10 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Icono from '../../components/Icono';
+import logoNexo from '../../assets/logo-nexo.jpeg';
 
-const inputBase =
-  'w-full rounded-xl border border-gray-300 py-2.5 pl-10 focus:border-origen-700 focus:outline-none focus:ring-2 focus:ring-origen-500';
-const inputClase = `${inputBase} pr-3`;
-// La contraseña deja espacio a la derecha para el botón del ojo
-const inputPassword = `${inputBase} pr-11`;
+const inputClase =
+  'w-full rounded-xl border border-origen-500/50 bg-white/95 p-2.5 text-origen-950 placeholder-origen-500 focus:border-origen-700 focus:outline-none focus:ring-1 focus:ring-origen-700';
 
 export default function Login() {
   const { usuario, login } = useAuth();
@@ -17,6 +15,7 @@ export default function Login() {
   const [verPassword, setVerPassword] = useState(false);
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [verAyuda, setVerAyuda] = useState(false);
 
   if (usuario) return <Navigate to="/" replace />;
 
@@ -35,84 +34,91 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <div className="hidden flex-1 flex-col justify-between bg-origen-950 p-12 text-origen-100 lg:flex">
-        <div className="flex items-center gap-3 text-xl font-bold">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-origen-700">
-            <Icono nombre="coffee" tamano={26} />
+    <main className="relative flex min-h-screen items-center justify-center bg-origen-100 p-4 text-origen-950">
+      <section className="w-full max-w-3xl">
+        <div className="flex items-center rounded-2xl border border-origen-500/30 bg-origen-300/55 p-5 shadow-xl backdrop-blur-sm">
+          {/* Columna izquierda: formulario */}
+          <div className="w-full px-6 md:w-1/2 md:px-10">
+            <h1 className="text-2xl font-bold">Iniciar sesión</h1>
+            <p className="mt-3 text-xs font-medium text-origen-700">¡Bienvenido de nuevo al equipo!</p>
+
+            <form onSubmit={handleSubmit} className="mt-7 flex flex-col gap-4">
+              {error && (
+                <p className="flex items-center gap-2 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+                  <Icono nombre="error" tamano={18} />
+                  {error}
+                </p>
+              )}
+
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-origen-700">Correo</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="usuario@origenes.sv"
+                  autoComplete="username"
+                  required
+                  className={inputClase}
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-origen-700">Contraseña</span>
+                <div className="relative">
+                  <input
+                    type={verPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                    className={`${inputClase} pr-10`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setVerPassword(!verPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-origen-500 hover:text-origen-700"
+                    aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  >
+                    <Icono nombre={verPassword ? 'visibility_off' : 'visibility'} tamano={20} />
+                  </button>
+                </div>
+              </label>
+
+              <button
+                type="submit"
+                disabled={enviando}
+                className="rounded-xl bg-origen-700 py-2.5 font-medium text-origen-100 shadow-sm duration-300 hover:scale-105 hover:bg-origen-950 disabled:opacity-60 disabled:hover:scale-100"
+              >
+                {enviando ? 'Entrando...' : 'Entrar'}
+              </button>
+            </form>
+
+            {/* Ayuda en vez de un enlace que no lleva a ningún lado */}
+            <div className="mt-6 border-t border-origen-500/40 pt-3.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setVerAyuda(!verAyuda)}
+                className="text-origen-700 hover:text-origen-950"
+              >
+                ¿No tienes acceso o olvidaste tu contraseña?
+              </button>
+              {verAyuda && (
+                <p className="mt-2 text-origen-700/90">
+                  Pídele al administrador de tu sucursal que cree o restablezca tu usuario.
+                </p>
+              )}
+            </div>
           </div>
-          Orígenes SV
+
+          {/* Columna derecha: logo del equipo (solo en pantallas medianas o más) */}
+          <div className="hidden w-1/2 self-stretch pl-2 md:block">
+            <div className="flex h-full min-h-80 items-center justify-center rounded-2xl bg-white p-6 shadow-md">
+              <img src={logoNexo} alt="Logo de Nexo Bytecode" className="max-h-72 w-full object-contain" />
+            </div>
+          </div>
         </div>
-
-        <div>
-          <h2 className="text-4xl font-bold leading-tight">
-            Gestiona tu negocio,
-            <br />
-            todo desde un solo lugar.
-          </h2>
-          <p className="mt-4 max-w-md text-origen-300">
-            Ventas, inventario, compras, caja y planilla de todas las sucursales.
-          </p>
-        </div>
-
-        <p className="text-sm text-origen-500">Nexo Bytecode · Programación Web</p>
-      </div>
-
-      <div className="flex flex-1 items-center justify-center bg-origen-100 px-6">
-        <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm">
-          <h1 className="mb-1 text-2xl font-bold text-origen-950">Bienvenido</h1>
-          <p className="mb-6 text-sm text-gray-500">Inicia sesión para continuar</p>
-
-          {error && (
-            <p className="mb-4 flex items-center gap-2 rounded-xl bg-red-50 p-3 text-sm text-red-700">
-              <Icono nombre="error" tamano={18} />
-              {error}
-            </p>
-          )}
-
-          <label className="mb-1 block text-sm font-medium text-gray-700">Correo</label>
-          <div className="relative mb-4">
-            <Icono nombre="mail" className="absolute left-3 top-1/2 -translate-y-1/2 text-origen-500" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className={inputClase}
-            />
-          </div>
-
-          <label className="mb-1 block text-sm font-medium text-gray-700">Contraseña</label>
-          <div className="relative mb-6">
-            <Icono nombre="lock" className="absolute left-3 top-1/2 -translate-y-1/2 text-origen-500" />
-            <input
-              type={verPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className={inputPassword}
-            />
-            <button
-              type="button"
-              onClick={() => setVerPassword(!verPassword)}
-              aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-              title={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-origen-500 transition hover:bg-origen-100 hover:text-origen-700"
-            >
-              <Icono nombre={verPassword ? 'visibility_off' : 'visibility'} tamano={20} />
-            </button>
-          </div>
-
-          <button
-            type="submit"
-            disabled={enviando}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-origen-700 py-2.5 font-semibold text-white transition hover:bg-origen-950 disabled:opacity-50"
-          >
-            {enviando ? 'Entrando...' : 'Entrar'}
-            {!enviando && <Icono nombre="arrow_forward" tamano={20} />}
-          </button>
-        </form>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
