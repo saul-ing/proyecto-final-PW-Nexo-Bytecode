@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from 'react';
 import { getVentas } from "../../api/ventasApi";
 import VistaFactura from "./VistaFactura";
 
@@ -13,25 +13,21 @@ export default function HistorialVentas() {
   const [mensaje, setMensaje] = useState("");
   const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
 
-  useEffect(() => {
-    cargarVentas();
-  }, []);
-
   const cargarVentas = async () => {
     try {
-      setLoading(true);
-      setMensaje("");
       const res = await getVentas();
       setVentas(res || []);
     } catch (err) {
-      setMensaje(
-        err.response?.data?.message ||
-          "Ha habido un error al cargar el historial de ventas"
-      );
+      setMensaje(err.response?.data?.message ||"Ha habido un error al cargar el historial de ventas");
     } finally {
       setLoading(false);
     }
   };
+
+ useEffect(() => {
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  cargarVentas();
+}, []);
 
   if (loading) {
     return <div className="p-6 text-gray-700">Cargando el historial de ventas...</div>;

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { getEmpleados, crearEmpleado, editarEmpleado, desactivarEmpleado } from '../../api/rrhhApi';
+import {useCallback, useEffect, useState } from 'react';
+import { getEmpleados, getSucursales, crearEmpleado, editarEmpleado, desactivarEmpleado } from '../../api/rrhhApi';
 
 import Icono from '../../components/Icono';
 import { Alerta, Campo, Encabezado, FilaVacia, Insignia } from '../../components/ui';
@@ -25,14 +25,17 @@ function EmpleadosPage() {
   const [mensaje, setMensaje] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-const cargar = () =>
-  getEmpleados(soloActivos ? { activo: true } : {})
-    .then((lista) => setEmpleados(Array.isArray(lista) ? lista : []))
-    .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los empleados'));
+const cargar = useCallback(
+  () =>
+    getEmpleados(soloActivos ? { activo: true } : {})
+      .then((lista) => setEmpleados(Array.isArray(lista) ? lista : []))
+      .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los empleados')),
+  [soloActivos]
+);
 
-  useEffect(() => {
-    cargar();
-  }, [soloActivos]);
+useEffect(() => {
+  cargar();
+}, [cargar]);
 
   const cambiar = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -104,6 +107,13 @@ const cargar = () =>
     }
   };
 
+  const [sucursales, setSucursales] = useState([]);
+useEffect(() => {
+  getSucursales()
+    .then((lista) => setSucursales(Array.isArray(lista) ? lista : []))
+    .catch(() => setError('No se pudieron cargar las sucursales'));
+}, []);
+
   return (
     <div>
       <Encabezado icono="badge" titulo="Empleados" descripcion="Baristas, cajeros y gerentes de todas las sucursales" />
@@ -146,6 +156,16 @@ const cargar = () =>
           <Campo etiqueta="ID de sucursal *">
             <input name="sucursalId" type="number" min="1" value={form.sucursalId} onChange={cambiar} required className={inputClase} />
           </Campo>
+          </label>
+          <label className="block">
+  <span className="text-sm text-gray-600">Sucursal *</span>
+  <select name="sucursalId" value={form.sucursalId} onChange={cambiar} required className={inputClase}>
+    <option value="">Seleccione...</option>
+    {sucursales.map((s) => (
+      <option key={s.id} value={s.id}>{s.nombre}</option>
+    ))}
+  </select>
+</label>
         </div>
 
         <div className="flex gap-2">

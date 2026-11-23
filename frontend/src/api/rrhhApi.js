@@ -1,4 +1,5 @@
 import axios from 'axios';
+import apiBase from './axios';
 
 const api = axios.create({ baseURL: `${import.meta.env.VITE_API_URL}/rrhh` });
 
@@ -22,3 +23,5 @@ export const getPlanillas = () => api.get('/planillas').then((r) => r.data.data)
 export const getPlanilla = (id) => api.get(`/planillas/${id}`).then((r) => r.data.data);
 export const generarPlanilla = (datos) => api.post('/planillas/generar', datos).then((r) => r.data.data);
 export const pagarPlanilla = (id) => api.patch(`/planillas/${id}/pagar`).then((r) => r.data.data);
+// Sucursales para el selector (ajustar si la respuesta del backend es distinta)
+export const getSucursales = () => apiBase.get('/sucursales').then((r) => r.data.sucursales ?? r.data.data ?? r.data);
