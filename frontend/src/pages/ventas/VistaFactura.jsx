@@ -1,62 +1,55 @@
+import React from "react";
+
+import Icono from '../../components/Icono';
+import { botonClase, botonGris } from '../../components/estilos';
+
 export default function VistaFactura({ venta, onClose }) {
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 print:bg-transparent print:p-0">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded border border-gray-300 bg-white font-mono text-gray-900 print:max-h-none print:border-0">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-3 print:hidden">
-          <h3 className="font-sans text-base font-semibold text-gray-900">
-            Vista Previa de Comprobante
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-origen-950/50 p-4 print:bg-transparent print:p-0">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white font-mono text-gray-900 shadow-xl print:max-h-none print:rounded-none print:shadow-none">
+        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-3 font-sans print:hidden">
+          <h3 className="flex items-center gap-2 text-base font-semibold text-origen-950">
+            <Icono nombre="receipt_long" className="text-origen-500" />
+            Vista previa del comprobante
           </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="font-sans text-sm text-gray-600 hover:text-gray-900"
-          >
-            Cerrar
+          <button type="button" onClick={onClose} aria-label="Cerrar" className="rounded-full p-1 text-gray-500 hover:bg-origen-100">
+            <Icono nombre="close" />
           </button>
         </div>
 
         <div className="p-6">
           <div className="mb-4 text-center">
-            <h4 className="text-lg font-bold text-gray-900">
-              {venta.sucursal?.nombre || "NEXO BYTECODE"}
-            </h4>
-            {venta.sucursal?.direccion && (
-              <p className="text-xs text-gray-600">{venta.sucursal.direccion}</p>
-            )}
-            {venta.sucursal?.telefono && (
-              <p className="text-xs text-gray-600">Tel: {venta.sucursal.telefono}</p>
-            )}
+            <h4 className="text-lg font-bold text-gray-900">{venta.sucursal?.nombre || "NEXO BYTECODE"}</h4>
+            {venta.sucursal?.direccion && <p className="text-xs text-gray-600">{venta.sucursal.direccion}</p>}
+            {venta.sucursal?.telefono && <p className="text-xs text-gray-600">Tel: {venta.sucursal.telefono}</p>}
             <div className="my-2 border-b border-gray-200" />
             <h5 className="text-sm font-bold uppercase text-gray-900">
-              {venta.tipo === "CCF"
-                ? "COMPROBANTE DE CRÉDITO FISCAL"
-                : "FACTURA DE CONSUMIDOR FINAL"}
+              {venta.tipo === 'CCF' ? 'COMPROBANTE DE CRÉDITO FISCAL' : 'FACTURA DE CONSUMIDOR FINAL'}
             </h5>
-            <p className="text-xs font-bold text-amber-800">
-              N°: {venta.tipo}-{String(venta.correlativo).padStart(6, "0")}
+            <p className="text-xs font-bold text-origen-700">
+              N°: {venta.tipo}-{String(venta.correlativo).padStart(6, '0')}
             </p>
           </div>
 
           <div className="mb-3 space-y-1 text-xs">
             <p>
-              <strong>Fecha:</strong> {new Date(venta.fecha).toLocaleString()}
+              <strong>Fecha:</strong> {new Date(venta.fecha).toLocaleString('es-SV')}
             </p>
             <p>
-              <strong>Cajero(a):</strong> {venta.usuario?.nombre || "N/D"}
+              <strong>Cajero(a):</strong> {venta.usuario?.nombre || 'N/D'}
             </p>
 
-            {venta.tipo === "CCF" && venta.cliente && (
-              <div className="mt-2 space-y-0.5 rounded border border-gray-200 bg-gray-50 p-2">
+            {venta.tipo === 'CCF' && venta.cliente && (
+              <div className="mt-2 space-y-0.5 rounded-xl border border-gray-200 bg-origen-100/50 p-2">
                 <p>
                   <strong>Cliente:</strong> {venta.cliente.nombre}
                 </p>
                 <p>
-                  <strong>NIT:</strong> {venta.cliente.nit || "N/D"}{" "}
-                  {venta.cliente.nrc ? `| NRC: ${venta.cliente.nrc}` : ""}
+                  <strong>NIT:</strong> {venta.cliente.nit || 'N/D'} {venta.cliente.nrc ? `| NRC: ${venta.cliente.nrc}` : ''}
                 </p>
                 {venta.cliente.giro && (
                   <p>
@@ -88,14 +81,10 @@ export default function VistaFactura({ venta, onClose }) {
                 {venta.detalles && venta.detalles.length > 0 ? (
                   venta.detalles.map((det) => (
                     <tr key={det.id} className="border-b border-gray-100">
-                      <td className="py-1.5">{det.producto?.nombre || "Producto"}</td>
+                      <td className="py-1.5">{det.producto?.nombre || 'Producto'}</td>
                       <td className="py-1.5 text-center">{det.cantidad}</td>
-                      <td className="py-1.5 text-right">
-                        ${Number(det.precioUnitario).toFixed(2)}
-                      </td>
-                      <td className="py-1.5 text-right">
-                        ${Number(det.subtotal).toFixed(2)}
-                      </td>
+                      <td className="py-1.5 text-right">${Number(det.precioUnitario).toFixed(2)}</td>
+                      <td className="py-1.5 text-right">${Number(det.subtotal).toFixed(2)}</td>
                     </tr>
                   ))
                 ) : (
@@ -113,7 +102,7 @@ export default function VistaFactura({ venta, onClose }) {
 
           <div className="space-y-1 text-xs">
             <div className="flex justify-between">
-              <span>Subtotal Neto:</span>
+              <span>Subtotal neto:</span>
               <span>${Number(venta.subtotal).toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
@@ -133,18 +122,11 @@ export default function VistaFactura({ venta, onClose }) {
         </div>
 
         <div className="flex justify-end gap-2 border-t border-gray-200 px-6 py-3 font-sans print:hidden">
-          <button
-            type="button"
-            onClick={handlePrint}
-            className="rounded bg-amber-700 px-4 py-2 text-xs font-medium text-white hover:bg-amber-800"
-          >
+          <button type="button" onClick={handlePrint} className={botonClase}>
+            <Icono nombre="print" tamano={20} />
             Imprimir
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded border border-gray-300 px-4 py-2 text-xs font-medium text-gray-800 hover:bg-gray-100"
-          >
+          <button type="button" onClick={onClose} className={botonGris}>
             Cerrar
           </button>
         </div>

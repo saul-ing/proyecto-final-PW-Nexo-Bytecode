@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { crearAbono, getCuentas } from '../../api/comprasApi';
 
+import Icono from '../../components/Icono';
+import { Alerta, Campo, Encabezado, FilaVacia, Modal } from '../../components/ui';
+import {
+  botonClase, botonGris, contenedorTabla, etiquetaClase, filaClase, inputClase,
+  tablaClase, tdClase, theadClase, thClase,
+} from '../../components/estilos';
+
 const dinero = (n) => `$${Number(n ?? 0).toFixed(2)}`;
 const fecha = (f) => (f ? new Date(f).toLocaleDateString('es-SV') : '-');
 
 const ABONO_VACIO = { monto: '', medioPago: 'EFECTIVO', nota: '' };
-
-const inputClase =
-  'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
-const botonClase =
-  'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-50';
 
 // Color de la etiqueta según el estado
 const colorEstado = {
@@ -58,22 +60,28 @@ function CuentasPorPagarPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Cuentas por pagar</h1>
+    <div>
+      <Encabezado icono="payments" titulo="Cuentas por pagar" descripcion="Saldos con proveedores y abonos" />
 
-      {error && <div className="mb-4 rounded bg-red-100 p-3 text-red-800">{error}</div>}
+      {error && <Alerta tipo="error" onCerrar={() => setError('')}>{error}</Alerta>}
 
-      <div className="mb-4 grid gap-3 md:grid-cols-3">
-        <div className="rounded border border-gray-200 p-4">
-          <p className="text-sm text-gray-600">Saldo pendiente</p>
-          <p className="text-2xl font-bold">{dinero(totalPendiente)}</p>
+      <div className="mb-6 grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl bg-origen-100 p-4">
+          <p className="mb-1 flex items-center gap-2 text-sm text-origen-500">
+            <Icono nombre="account_balance_wallet" tamano={20} />
+            Saldo pendiente
+          </p>
+          <p className="text-2xl font-bold text-origen-950">{dinero(totalPendiente)}</p>
         </div>
-        <div className={`rounded border p-4 ${vencidas.length ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
-          <p className="text-sm text-gray-600">Cuentas vencidas</p>
-          <p className="text-2xl font-bold">{vencidas.length}</p>
+        <div className={`rounded-2xl p-4 ${vencidas.length ? 'bg-red-50' : 'bg-origen-100'}`}>
+          <p className={`mb-1 flex items-center gap-2 text-sm ${vencidas.length ? 'text-red-700' : 'text-origen-500'}`}>
+            <Icono nombre="event_busy" tamano={20} />
+            Cuentas vencidas
+          </p>
+          <p className={`text-2xl font-bold ${vencidas.length ? 'text-red-700' : 'text-origen-950'}`}>{vencidas.length}</p>
         </div>
-        <label className="block rounded border border-gray-200 p-4">
-          <span className="text-sm text-gray-600">Filtrar por estado</span>
+        <label className="block rounded-2xl border border-gray-200 p-4">
+          <span className={etiquetaClase}>Filtrar por estado</span>
           <select value={filtro} onChange={(e) => setFiltro(e.target.value)} className={inputClase}>
             <option value="">Todas</option>
             <option value="PENDIENTE">Pendientes</option>
@@ -83,77 +91,84 @@ function CuentasPorPagarPage() {
         </label>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead className="bg-gray-100">
+      <div className={contenedorTabla}>
+        <table className={tablaClase}>
+          <thead className={theadClase}>
             <tr>
-              <th className="p-2">Proveedor</th>
-              <th className="p-2">Factura</th>
-              <th className="p-2">Vence</th>
-              <th className="p-2 text-right">Monto</th>
-              <th className="p-2 text-right">Saldo</th>
-              <th className="p-2">Estado</th>
-              <th className="p-2"></th>
+              <th className={thClase}>Proveedor</th>
+              <th className={thClase}>Factura</th>
+              <th className={thClase}>Vence</th>
+              <th className={`${thClase} text-right`}>Monto</th>
+              <th className={`${thClase} text-right`}>Saldo</th>
+              <th className={thClase}>Estado</th>
+              <th className={thClase}></th>
             </tr>
           </thead>
           <tbody>
             {cuentas.map((c) => (
-              <tr key={c.id} className={`border-b border-gray-200 ${c.vencida ? 'bg-red-50' : ''}`}>
-                <td className="p-2">{c.compra.proveedor.nombre}</td>
-                <td className="p-2">{c.compra.numeroDocumento}</td>
-                <td className="p-2">
+              <tr key={c.id} className={`${filaClase} ${c.vencida ? 'bg-red-50' : ''}`}>
+                <td className={`${tdClase} font-medium text-origen-950`}>{c.compra.proveedor.nombre}</td>
+                <td className={tdClase}>{c.compra.numeroDocumento}</td>
+                <td className={tdClase}>
                   {fecha(c.fechaVencimiento)}
                   {c.vencida && <span className="ml-2 font-semibold text-red-700">Vencida</span>}
                 </td>
-                <td className="p-2 text-right">{dinero(c.monto)}</td>
-                <td className="p-2 text-right font-medium">{dinero(c.saldo)}</td>
-                <td className="p-2">
-                  <span className={`rounded px-2 py-1 text-xs font-semibold ${colorEstado[c.estado]}`}>{c.estado}</span>
+                <td className={`${tdClase} text-right`}>{dinero(c.monto)}</td>
+                <td className={`${tdClase} text-right font-semibold`}>{dinero(c.saldo)}</td>
+                <td className={tdClase}>
+                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${colorEstado[c.estado]}`}>{c.estado}</span>
                 </td>
-                <td className="p-2 text-right">
+                <td className={`${tdClase} text-right`}>
                   {c.estado !== 'PAGADA' && (
-                    <button onClick={() => abrirAbono(c)} className="rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">Abonar</button>
+                    <button type="button" onClick={() => abrirAbono(c)} className={botonGris}>
+                      <Icono nombre="payments" tamano={18} />
+                      Abonar
+                    </button>
                   )}
                 </td>
               </tr>
             ))}
-            {cuentas.length === 0 && (
-              <tr><td colSpan="7" className="p-4 text-center text-gray-500">No hay cuentas por pagar</td></tr>
-            )}
+            {cuentas.length === 0 && <FilaVacia columnas={7} texto="No hay cuentas por pagar" />}
           </tbody>
         </table>
       </div>
 
       {/* Formulario de abono */}
       {seleccionada && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4" onClick={() => setSeleccionada(null)}>
-          <form onSubmit={guardarAbono} className="w-full max-w-md space-y-3 rounded bg-white p-5 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-semibold">Abonar a {seleccionada.compra.proveedor.nombre}</h2>
-            <p className="text-sm text-gray-600">Factura {seleccionada.compra.numeroDocumento} · saldo {dinero(seleccionada.saldo)}</p>
-            <label className="block">
-              <span className="text-sm text-gray-600">Monto</span>
+        <Modal onCerrar={() => setSeleccionada(null)} ancho="max-w-md">
+          <form onSubmit={guardarAbono} className="space-y-4">
+            <div>
+              <h2 className="text-lg font-bold text-origen-950">Abonar a {seleccionada.compra.proveedor.nombre}</h2>
+              <p className="text-sm text-gray-500">
+                Factura {seleccionada.compra.numeroDocumento} · saldo {dinero(seleccionada.saldo)}
+              </p>
+            </div>
+            <Campo etiqueta="Monto">
               <input type="number" min="0.01" step="0.01" max={Number(seleccionada.saldo)} value={abono.monto}
                 onChange={(e) => setAbono({ ...abono, monto: e.target.value })} required className={inputClase} />
-            </label>
-            <label className="block">
-              <span className="text-sm text-gray-600">Medio de pago</span>
+            </Campo>
+            <Campo etiqueta="Medio de pago">
               <select value={abono.medioPago} onChange={(e) => setAbono({ ...abono, medioPago: e.target.value })} className={inputClase}>
                 <option value="EFECTIVO">Efectivo</option>
                 <option value="TARJETA">Tarjeta</option>
                 <option value="BITCOIN">Bitcoin</option>
                 <option value="CHIVO_WALLET">Chivo Wallet</option>
               </select>
-            </label>
-            <label className="block">
-              <span className="text-sm text-gray-600">Nota (opcional)</span>
+            </Campo>
+            <Campo etiqueta="Nota (opcional)">
               <input value={abono.nota} onChange={(e) => setAbono({ ...abono, nota: e.target.value })} className={inputClase} />
-            </label>
+            </Campo>
             <div className="flex gap-2">
-              <button type="submit" disabled={enviando} className={botonClase}>Registrar abono</button>
-              <button type="button" onClick={() => setSeleccionada(null)} className="rounded border border-gray-300 px-4 py-2 hover:bg-gray-100">Cancelar</button>
+              <button type="submit" disabled={enviando} className={botonClase}>
+                <Icono nombre="check_circle" tamano={20} />
+                Registrar abono
+              </button>
+              <button type="button" onClick={() => setSeleccionada(null)} className={`${botonGris} px-4 py-2`}>
+                Cancelar
+              </button>
             </div>
           </form>
-        </div>
+        </Modal>
       )}
     </div>
   );
