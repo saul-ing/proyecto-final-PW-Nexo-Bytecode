@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function VistaFactura({ venta, onClose }) {
   const handlePrint = () => {
     window.print();

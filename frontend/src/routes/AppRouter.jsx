@@ -21,7 +21,6 @@ import PlanillasPage from '../pages/rrhh/PlanillasPage';
 const PESTANAS_INVENTARIO = [
   { to: '/inventario/insumos', texto: 'Insumos' },
   { to: '/inventario/productos', texto: 'Productos' },
-  { to: '/inventario/recetas', texto: 'Recetas' },
 ];
 
 const PESTANAS_COMPRAS = [
@@ -61,7 +60,7 @@ export default function AppRouter() {
                 <Route index element={<Navigate to="insumos" replace />} />
                 <Route path="insumos" element={<InsumosPage />} />
                 <Route path="productos" element={<ProductosPage />} />
-                <Route path="recetas" element={<RecetaPage />} />
+                <Route path="productos/:id/receta" element={<RecetaPage />} />
               </Route>
             </Route>
 
