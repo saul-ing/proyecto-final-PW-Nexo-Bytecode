@@ -5,14 +5,11 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
-  const [cargando, setCargando] = useState(true);
+  const [cargando, setCargando] = useState(() => Boolean(localStorage.getItem('token')));
 
   // Al abrir la app: si hay token guardado, recupera al usuario
   useEffect(() => {
-    if (!localStorage.getItem('token')) {
-      setCargando(false);
-      return;
-    }
+    if (!localStorage.getItem('token')) return;
     api
       .get('/auth/me')
       .then(({ data }) => setUsuario(data.usuario))
@@ -38,4 +35,5 @@ export function AuthProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
