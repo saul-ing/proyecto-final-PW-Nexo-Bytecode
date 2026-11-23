@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { getEmpleados, crearEmpleado, editarEmpleado, desactivarEmpleado } from '../../api/rrhhApi';
 
+import Icono from '../../components/Icono';
+import { Alerta, Campo, Encabezado, FilaVacia, Insignia } from '../../components/ui';
+import {
+  botonClase, botonGris, botonRojo, contenedorTabla, filaClase, inputClase,
+  tablaClase, tarjetaClase, tdClase, theadClase, thClase,
+} from '../../components/estilos';
+
 const dinero = (n) => `$${Number(n ?? 0).toFixed(2)}`;
 const CARGOS = ['Barista', 'Cajero', 'Gerente'];
 
@@ -8,11 +15,6 @@ const EMPLEADO_VACIO = {
   nombre: '', dui: '', nit: '', numeroIsss: '', numeroAfp: '',
   cargo: 'Barista', salarioMensual: '', fechaIngreso: '', sucursalId: '',
 };
-
-const inputClase =
-  'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
-const botonClase =
-  'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-50';
 
 function EmpleadosPage() {
   const [empleados, setEmpleados] = useState([]);
@@ -103,112 +105,106 @@ const cargar = () =>
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Empleados</h1>
+    <div>
+      <Encabezado icono="badge" titulo="Empleados" descripcion="Baristas, cajeros y gerentes de todas las sucursales" />
 
-      {error && <div className="mb-4 rounded bg-red-100 p-3 text-red-800">{error}</div>}
-      {mensaje && <div className="mb-4 rounded bg-green-100 p-3 text-green-800">{mensaje}</div>}
+      {error && <Alerta tipo="error" onCerrar={() => setError('')}>{error}</Alerta>}
+      {mensaje && <Alerta tipo="ok" onCerrar={() => setMensaje('')}>{mensaje}</Alerta>}
 
-      <form onSubmit={guardar} className="mb-6 space-y-4 rounded border border-gray-200 p-4">
-        <h2 className="text-lg font-semibold">{editandoId ? 'Editar empleado' : 'Registrar empleado'}</h2>
+      <form onSubmit={guardar} className={`${tarjetaClase} mb-6 space-y-4`}>
+        <h3 className="font-semibold text-origen-950">{editandoId ? 'Editar empleado' : 'Registrar empleado'}</h3>
 
         <div className="grid gap-3 md:grid-cols-3">
-          <label className="block">
-            <span className="text-sm text-gray-600">Nombre completo *</span>
+          <Campo etiqueta="Nombre completo *">
             <input name="nombre" value={form.nombre} onChange={cambiar} required className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">DUI *</span>
+          </Campo>
+          <Campo etiqueta="DUI *">
             <input name="dui" value={form.dui} onChange={cambiar} required placeholder="00000000-0" className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">NIT</span>
+          </Campo>
+          <Campo etiqueta="NIT">
             <input name="nit" value={form.nit} onChange={cambiar} className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">N.º ISSS</span>
+          </Campo>
+          <Campo etiqueta="N.º ISSS">
             <input name="numeroIsss" value={form.numeroIsss} onChange={cambiar} className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">N.º AFP</span>
+          </Campo>
+          <Campo etiqueta="N.º AFP">
             <input name="numeroAfp" value={form.numeroAfp} onChange={cambiar} className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">Cargo *</span>
+          </Campo>
+          <Campo etiqueta="Cargo *">
             <select name="cargo" value={form.cargo} onChange={cambiar} className={inputClase}>
               {CARGOS.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">Salario mensual *</span>
+          </Campo>
+          <Campo etiqueta="Salario mensual *">
             <input name="salarioMensual" type="number" min="0.01" step="0.01" value={form.salarioMensual} onChange={cambiar} required className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">Fecha de ingreso *</span>
+          </Campo>
+          <Campo etiqueta="Fecha de ingreso *">
             <input name="fechaIngreso" type="date" value={form.fechaIngreso} onChange={cambiar} required className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">ID de sucursal *</span>
+          </Campo>
+          <Campo etiqueta="ID de sucursal *">
             <input name="sucursalId" type="number" min="1" value={form.sucursalId} onChange={cambiar} required className={inputClase} />
-          </label>
+          </Campo>
         </div>
 
         <div className="flex gap-2">
           <button type="submit" disabled={enviando} className={botonClase}>
+            <Icono nombre={editandoId ? 'save' : 'person_add'} tamano={20} />
             {enviando ? 'Guardando...' : editandoId ? 'Guardar cambios' : 'Registrar empleado'}
           </button>
           {editandoId && (
-            <button type="button" onClick={cancelar} className="rounded border border-gray-300 px-4 py-2 hover:bg-gray-100">
+            <button type="button" onClick={cancelar} className={`${botonGris} px-4 py-2`}>
               Cancelar
             </button>
           )}
         </div>
       </form>
 
-      <label className="mb-3 flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={soloActivos} onChange={(e) => setSoloActivos(e.target.checked)} />
+      <label className="mb-3 flex items-center gap-2 text-sm text-origen-700">
+        <input type="checkbox" checked={soloActivos} onChange={(e) => setSoloActivos(e.target.checked)} className="h-4 w-4 accent-origen-700" />
         Mostrar solo empleados activos
       </label>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead className="bg-gray-100">
+      <div className={contenedorTabla}>
+        <table className={tablaClase}>
+          <thead className={theadClase}>
             <tr>
-              <th className="p-2">Nombre</th>
-              <th className="p-2">DUI</th>
-              <th className="p-2">Cargo</th>
-              <th className="p-2">Sucursal</th>
-              <th className="p-2 text-right">Salario mensual</th>
-              <th className="p-2">Estado</th>
-              <th className="p-2"></th>
+              <th className={thClase}>Nombre</th>
+              <th className={thClase}>DUI</th>
+              <th className={thClase}>Cargo</th>
+              <th className={thClase}>Sucursal</th>
+              <th className={`${thClase} text-right`}>Salario mensual</th>
+              <th className={thClase}>Estado</th>
+              <th className={thClase}></th>
             </tr>
           </thead>
           <tbody>
             {empleados.map((emp) => (
-              <tr key={emp.id} className="border-b border-gray-200">
-                <td className="p-2">{emp.nombre}</td>
-                <td className="p-2">{emp.dui}</td>
-                <td className="p-2">{emp.cargo}</td>
-                <td className="p-2">{emp.sucursal?.nombre ?? emp.sucursalId}</td>
-                <td className="p-2 text-right">{dinero(emp.salarioMensual)}</td>
-                <td className="p-2">{emp.activo ? 'Activo' : 'Inactivo'}</td>
-                <td className="space-x-2 p-2 text-right">
-                  <button onClick={() => editar(emp)} className="rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">
+              <tr key={emp.id} className={filaClase}>
+                <td className={`${tdClase} font-medium text-origen-950`}>{emp.nombre}</td>
+                <td className={tdClase}>{emp.dui}</td>
+                <td className={tdClase}>{emp.cargo}</td>
+                <td className={tdClase}>{emp.sucursal?.nombre ?? emp.sucursalId}</td>
+                <td className={`${tdClase} text-right`}>{dinero(emp.salarioMensual)}</td>
+                <td className={tdClase}>
+                  <Insignia color={emp.activo ? 'verde' : 'gris'}>{emp.activo ? 'Activo' : 'Inactivo'}</Insignia>
+                </td>
+                <td className={`${tdClase} whitespace-nowrap text-right`}>
+                  <button type="button" onClick={() => editar(emp)} className={`${botonGris} mr-2`}>
+                    <Icono nombre="edit" tamano={18} />
                     Editar
                   </button>
                   {emp.activo && (
-                    <button onClick={() => desactivar(emp)} className="rounded border border-red-300 px-3 py-1 text-red-700 hover:bg-red-50">
+                    <button type="button" onClick={() => desactivar(emp)} className={botonRojo}>
+                      <Icono nombre="person_off" tamano={18} />
                       Desactivar
                     </button>
                   )}
                 </td>
               </tr>
             ))}
-            {empleados.length === 0 && (
-              <tr><td colSpan="7" className="p-4 text-center text-gray-500">No hay empleados registrados</td></tr>
-            )}
+            {empleados.length === 0 && <FilaVacia columnas={7} texto="No hay empleados registrados" />}
           </tbody>
         </table>
       </div>
