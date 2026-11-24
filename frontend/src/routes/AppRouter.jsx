@@ -11,7 +11,6 @@ import TurnoPage from '../pages/caja/TurnoPage';
 import ComprasPage from '../pages/compras/ComprasPage';
 import ProveedoresPage from '../pages/compras/ProveedoresPage';
 import CuentasPorPagarPage from '../pages/compras/CuentasPorPagarPage';
-import EstadoCuentaProveedor from '../pages/compras/EstadoCuentaProveedor';
 import InsumosPage from '../pages/inventario/InsumosPage';
 import ProductosPage from '../pages/inventario/ProductosPage';
 import RecetaPage from '../pages/inventario/RecetaPage';
@@ -73,7 +72,6 @@ export default function AppRouter() {
                 <Route index element={<Navigate to="facturas" replace />} />
                 <Route path="facturas" element={<ComprasPage />} />
                 <Route path="proveedores" element={<ProveedoresPage />} />
-                <Route path="proveedores/:id/estado-cuenta" element={<EstadoCuentaProveedor />} />
                 <Route path="cuentas" element={<CuentasPorPagarPage />} />
               </Route>
             </Route>
