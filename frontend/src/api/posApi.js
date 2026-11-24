@@ -1,16 +1,7 @@
-import axios from 'axios';
+import { crearApi } from './axios';
 
-const api = axios.create({ baseURL: `${import.meta.env.VITE_API_URL}/pos` });
-const apiVentas = axios.create({ baseURL: `${import.meta.env.VITE_API_URL}/ventas` });
-
-// El backend pide token, se manda en cada petición
-const conToken = (config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-};
-api.interceptors.request.use(conToken);
-apiVentas.interceptors.request.use(conToken);
+const api = crearApi('/pos');
+const apiVentas = crearApi('/ventas');
 
 // Catálogo
 export const getCategorias = () => api.get('/categorias').then((r) => r.data.categorias);
