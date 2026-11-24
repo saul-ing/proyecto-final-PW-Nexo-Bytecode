@@ -1,5 +1,3 @@
-import React from "react";
-
 import Icono from '../../components/Icono';
 import { botonClase, botonGris } from '../../components/estilos';
 

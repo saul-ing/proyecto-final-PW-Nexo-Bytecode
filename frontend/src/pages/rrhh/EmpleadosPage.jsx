@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { getEmpleados, crearEmpleado, editarEmpleado, desactivarEmpleado } from '../../api/rrhhApi';
+import { useCallback, useEffect, useState } from 'react';
+import { getEmpleados, crearEmpleado, editarEmpleado, desactivarEmpleado, getSucursales } from '../../api/rrhhApi';
 
 import Icono from '../../components/Icono';
 import { Alerta, Campo, Encabezado, FilaVacia, Insignia } from '../../components/ui';
@@ -18,6 +18,7 @@ const EMPLEADO_VACIO = {
 
 function EmpleadosPage() {
   const [empleados, setEmpleados] = useState([]);
+  const [sucursales, setSucursales] = useState([]);
   const [form, setForm] = useState(EMPLEADO_VACIO);
   const [editandoId, setEditandoId] = useState(null);
   const [soloActivos, setSoloActivos] = useState(true);
@@ -25,14 +26,25 @@ function EmpleadosPage() {
   const [mensaje, setMensaje] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-const cargar = () =>
-  getEmpleados(soloActivos ? { activo: true } : {})
-    .then((lista) => setEmpleados(Array.isArray(lista) ? lista : []))
-    .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los empleados'));
+  // useCallback para que el efecto se vuelva a correr solo cuando cambia el filtro
+  const cargar = useCallback(
+    () =>
+      getEmpleados(soloActivos ? { activo: true } : {})
+        .then((lista) => setEmpleados(Array.isArray(lista) ? lista : []))
+        .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los empleados')),
+    [soloActivos],
+  );
 
   useEffect(() => {
     cargar();
-  }, [soloActivos]);
+  }, [cargar]);
+
+  // Sucursales para el selector del formulario
+  useEffect(() => {
+    getSucursales()
+      .then((lista) => setSucursales(Array.isArray(lista) ? lista : []))
+      .catch(() => setError('No se pudieron cargar las sucursales'));
+  }, []);
 
   const cambiar = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -143,8 +155,13 @@ const cargar = () =>
           <Campo etiqueta="Fecha de ingreso *">
             <input name="fechaIngreso" type="date" value={form.fechaIngreso} onChange={cambiar} required className={inputClase} />
           </Campo>
-          <Campo etiqueta="ID de sucursal *">
-            <input name="sucursalId" type="number" min="1" value={form.sucursalId} onChange={cambiar} required className={inputClase} />
+          <Campo etiqueta="Sucursal *">
+            <select name="sucursalId" value={form.sucursalId} onChange={cambiar} required className={inputClase}>
+              <option value="" disabled>Selecciona una sucursal</option>
+              {sucursales.map((s) => (
+                <option key={s.id} value={String(s.id)}>{s.nombre}</option>
+              ))}
+            </select>
           </Campo>
         </div>
 
