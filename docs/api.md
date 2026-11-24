@@ -1,3 +1,28 @@
+# Contratos HTTP de la API
+
+Referencia: develop, commit 3575d81.
+
+Base: http://127.0.0.1:3000/api. JSON de éxito con ok:true; errores {ok:false,message}. Todas las rutas inventario requieren Authorization: Bearer TOKEN. No guardar el token en documentación/evidencia.
+
+| Método | Ruta relativa | Entrada / respuesta |
+|---|---|---|
+| GET | /health | {ok:true,message}; no comprueba DB |
+| POST | /auth/login | {email,password} — {ok,token,usuario}; 400 incompleto,401 inválido |
+| GET | /auth/me | Bearer — {ok,usuario} |
+| GET | /inventario/insumos | {ok,insumos}; stock de sucursal JWT |
+| POST | /inventario/insumos | {nombre,unidad,costoUnitario,cantidad,stockMinimo} — 201 {ok,insumo} |
+| PUT | /inventario/insumos/:id | {nombre,unidad,costoUnitario,stockMinimo}; no edita cantidad |
+| DELETE | /inventario/insumos/:id | Desactiva globalmente el insumo |
+| GET | /inventario/productos | {ok,productos}; categoría, reventa y receta |
+| GET | /inventario/productos/:id | {ok,producto};404 inexistente |
+| POST | /inventario/productos | {nombre,tipo,precio,categoria,insumoReventaId?} →201 |
+| PUT | /inventario/productos/:id | Mismos campos; categoría como texto |
+| DELETE | /inventario/productos/:id | Desactiva globalmente |
+| PUT | /inventario/productos/:id/receta | {lineas:[{insumoId,cantidad}]} reemplaza receta;400 vacía |
+| GET | /inventario/alertas | {ok,alertas}; cantidad<=mínimo en sucursal JWT |
+
+Las unidades de inventario son G, ML y UNIDAD. Los productos pueden ser ELABORADO o REVENTA. El precio de catálogo incluye IVA y el módulo de ventas desglosa la base y el impuesto. Para editar envía los campos indicados por la ruta PUT.
+
 ## Caja y turnos
 
 Todas las rutas piden token y rol ADMIN, GERENTE o CAJERO.
@@ -15,9 +40,7 @@ Todas las rutas piden token y rol ADMIN, GERENTE o CAJERO.
 - **Digital esperado** = pagos con Bitcoin + Chivo Wallet.
 - `diferencias` = contado − esperado. Negativo es faltante, positivo es sobrante.
 
-### Para otros módulos
-
-- Ventas: usar `exigirTurnoAbierto(tx, usuarioId)` de `modules/caja/caja.service.js` y guardar su `id` en `venta.turnoId`.
+Ventas vincula cada comprobante al turno abierto de la sucursal. Caja consulta y cierra el turno abierto del usuario.
 
 ## Compras y proveedores
 
@@ -84,13 +107,39 @@ El POS registra la venta con `POST /api/ventas`. Los pagos que se envían deben 
 
 Cualquier usuario con sesión puede consultarlas (sirve para selectores, por ejemplo en empleados).
 
-## Datos de prueba (seed)
+| Método | Ruta | Datos y resultado |
+|---|---|---|
+| GET | /api/sucursales/:id | Devuelve `{ ok, sucursal }`. |
+| POST | /api/sucursales | Solo ADMIN. Recibe `nombre`, `direccion` y `telefono`. Devuelve 201 y `{ ok, sucursal }`. |
+| PUT | /api/sucursales/:id | Solo ADMIN. Actualiza `nombre`, `direccion`, `telefono` y `activa`. |
 
-`npm run db:seed` carga todo y se puede correr varias veces sin duplicar datos. Cada módulo tiene su archivo en `backend/prisma/seeds/`.
+## Ventas
 
-- **Sucursales:** Casa Matriz, Santa Tecla y San Miguel.
-- **Usuarios:** `admin`, `gerente`, `cajero` y `barista` `@origenes.sv` (contraseñas en `seeds/base.js`).
-- **Inventario:** 26 insumos con stock en las 3 sucursales, 15 productos elaborados con receta (incluido el Latte Grande del enunciado) y 4 de reventa. La leche de almendra empieza bajo el mínimo para mostrar la alerta.
-- **Clientes:** 3 con NIT y NRC para emitir CCF.
-- **Compras:** 4 proveedores y 4 compras: una de contado y cuentas por pagar pendiente y vencida, parcial y pagada.
-- **RRHH:** 8 empleados repartidos en las sucursales y la tabla de renta quincenal.
+Las solicitudes requieren token. El servicio registra y consulta comprobantes en el contexto de la sucursal del usuario.
+
+| Método | Ruta | Datos y resultado |
+|---|---|---|
+| POST | /api/ventas | `{ tipoDocumento, clienteId, items: [{ productoId, cantidad }], pagos: [{ medio, monto }] }`. Devuelve 201 y `{ ok, venta }`. Requiere turno abierto. CCF exige cliente con NIT y NRC. |
+| GET | /api/ventas | Filtros opcionales `turnoId` y `fecha` (YYYY-MM-DD). Devuelve `{ ok, ventas }`. |
+| GET | /api/ventas/:id | Devuelve `{ ok, venta }`. |
+| PATCH | /api/ventas/:id/anular | Anula la venta y reintegra existencias mediante movimientos de inventario. Devuelve `{ ok, message, venta }`. |
+
+El precio de catálogo incluye IVA. Por línea, el subtotal se calcula dividiendo el total entre 1.13. El IVA es la diferencia entre el total y la base redondeada. Los correlativos se asignan por sucursal y tipo de documento.
+
+## Empleados y planillas
+
+Requiere ADMIN o GERENTE. Para el listado de empleados y la gestión de períodos, gerencia usa el alcance de su sucursal. Las respuestas exitosas tienen `{ ok, data }`.
+
+| Método | Ruta | Datos |
+|---|---|---|
+| GET | /api/rrhh/empleados | Filtros opcionales `activo` y `sucursalId`. |
+| GET | /api/rrhh/empleados/:id | Ficha del empleado. |
+| POST | /api/rrhh/empleados | Nombre, DUI, cargo, salario mensual, fecha de ingreso y sucursal. NIT, ISSS y AFP son campos adicionales. |
+| PUT | /api/rrhh/empleados/:id | Actualiza los campos de la ficha. |
+| PATCH | /api/rrhh/empleados/:id/desactivar | Desactiva al empleado. |
+| GET | /api/rrhh/planillas | Filtro opcional `sucursalId`. |
+| POST | /api/rrhh/planillas/generar | `{ fechaInicio, fechaFin, sucursalId }`. Devuelve 201. |
+| GET | /api/rrhh/planillas/:id | Detalle de la planilla. |
+| PATCH | /api/rrhh/planillas/:id/pagar | Marca la planilla como pagada. |
+
+Para datos de demostración, consulta el [seed principal](db.md#seed-principal).
