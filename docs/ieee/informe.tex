@@ -129,7 +129,9 @@ Se consultó el comprobante después de cada venta y se comparó el stock anteri
 El sistema vinculó operaciones de venta, inventario y caja en la base de demostración. El Latte Grande permitió contrastar receta, cálculo de IVA, movimientos de existencias y cuadre con una operación concreta. La compra a crédito y la planilla confirmaron que el mismo entorno soporta los flujos administrativos evaluados. La migración versionada y el seed principal permiten repetir la demostración con otra base local.
 
 \section*{Uso de inteligencia artificial}
-El equipo declara OpenAI Codex y Anthropic Claude en la bibliografía. Codex apoyó la documentación, la preparación de material de QA y la configuración local \cite{codex}. Claude apoyó compras y abonos, el seed principal, la ruta \texttt{GET /api/sucursales} y la corrección de la respuesta HTTP 400 para identificadores inválidos. En el frontend se usó como apoyo para el nuevo login, el selector de sucursal, las fotos del POS y el cliente Axios compartido. También apoyó el README y la revisión de entregables \cite{claude}. La atribución de los módulos y actividades está respaldada por el historial del equipo.
+El equipo declara OpenAI Codex y Anthropic Claude en la bibliografía. Codex apoyó la documentación, la preparación de material de QA y la configuración local \cite{codex}.
+
+Anthropic Claude apoyó a J. Angel en el módulo de compras y proveedores, tanto en el backend como en el frontend. El apoyo abarcó el registro de compras con entrada de inventario y cuentas por pagar, abonos y estado de cuenta, además del seed de demostración, la consulta de sucursales y el manejo de errores de validación. También apoyó la integración del nuevo inicio de sesión, las imágenes del catálogo POS, el cliente HTTP compartido, el selector de sucursal en empleados, correcciones de lint y rutas, el borrador del README y la revisión del repositorio y de los entregables \cite{claude}. Las funciones \texttt{registrarCompra} y \texttt{registrarAbono} están marcadas en el código fuente. Johann confirmó que revisó los cambios de código y que se integraron por pull request.
 
 \IEEEtriggeratref{2}
 \begin{thebibliography}{9}
@@ -148,6 +150,6 @@ R. Fielding, M. Nottingham y J. Reschke, “HTTP Semantics,” RFC 9110, jun. 20
 \bibitem{codex}
 OpenAI, Codex, asistente de IA. Uso en el proyecto: apoyo en documentación, QA y configuración local, nov. 2026.
 \bibitem{claude}
-Anthropic, Claude, asistente de IA. Uso en el proyecto: compras y abonos, seed principal, consulta de sucursales, manejo de identificadores inválidos, login, selector de sucursal, fotos del POS, Axios compartido, README y revisión de entregables, nov. 2026.
+Anthropic, Claude (Claude Code), asistente de IA. Uso en el proyecto: módulo de compras y proveedores, datos de demostración, consulta de sucursales, manejo de errores, inicio de sesión, imágenes del POS, cliente HTTP compartido, correcciones y revisión de entregables, nov. 2026.
 \end{thebibliography}
 \end{document}
