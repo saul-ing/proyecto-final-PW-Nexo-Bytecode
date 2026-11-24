@@ -1,5 +1,6 @@
 import Icono from '../../components/Icono';
 import { dinero } from '../../utils/formato';
+import { imagenProducto } from './imagenesProductos';
 
 // Icono de cada categoría según su nombre
 const ICONOS_CATEGORIA = [
@@ -81,6 +82,7 @@ function CatalogoProductos({
             const agotado = p.disponibles < 1;
             const bajo = !agotado && p.disponibles <= 5;
             const cantidad = cantidades[p.id] ?? 0;
+            const imagen = imagenProducto(p.nombre);
 
             return (
               <div
@@ -91,8 +93,13 @@ function CatalogoProductos({
                   (agotado ? ' opacity-50' : '')
                 }
               >
-                <div className="mb-3 flex h-24 items-center justify-center rounded-xl bg-origen-100 text-origen-500">
-                  <Icono nombre={iconoCategoria(p.categoria)} tamano={44} />
+                {/* Foto del producto; si no tiene, queda el icono de su categoría */}
+                <div className="mb-3 flex h-32 items-center justify-center overflow-hidden rounded-xl bg-origen-100 text-origen-500">
+                  {imagen ? (
+                    <img src={imagen} alt={p.nombre} loading="lazy" className="h-full w-full object-cover" />
+                  ) : (
+                    <Icono nombre={iconoCategoria(p.categoria)} tamano={44} />
+                  )}
                 </div>
 
                 <h3 className="font-semibold text-origen-950">{p.nombre}</h3>
