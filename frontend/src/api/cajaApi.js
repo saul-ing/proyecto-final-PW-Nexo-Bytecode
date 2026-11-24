@@ -1,13 +1,6 @@
-import axios from 'axios';
+import { crearApi } from './axios';
 
-const api = axios.create({ baseURL: `${import.meta.env.VITE_API_URL}/caja` });
-
-// El backend pide token, se manda en cada petición
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+const api = crearApi('/caja');
 
 // Devuelve el turno abierto o null si no hay
 export const getTurnoActual = () => api.get('/turnos/actual').then((r) => r.data.turno);

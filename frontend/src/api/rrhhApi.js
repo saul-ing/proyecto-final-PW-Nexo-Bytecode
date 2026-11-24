@@ -1,14 +1,6 @@
-import axios from 'axios';
-import apiBase from './axios';
+import apiBase, { crearApi } from './axios';
 
-const api = axios.create({ baseURL: `${import.meta.env.VITE_API_URL}/rrhh` });
-
-// El backend pide token, se manda en cada petición
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+const api = crearApi('/rrhh');
 
 // Empleados. datos = { nombre, dui, nit, numeroIsss, numeroAfp, cargo, salarioMensual, fechaIngreso, sucursalId }
 // params opcionales: { activo: true, sucursalId }

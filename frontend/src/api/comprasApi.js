@@ -1,13 +1,6 @@
-import axios from 'axios';
+import { crearApi } from './axios';
 
-const api = axios.create({ baseURL: `${import.meta.env.VITE_API_URL}/compras` });
-
-// El backend pide token, se manda en cada petición
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+const api = crearApi('/compras');
 
 // Proveedores
 export const getProveedores = () => api.get('/proveedores').then((r) => r.data.proveedores);
