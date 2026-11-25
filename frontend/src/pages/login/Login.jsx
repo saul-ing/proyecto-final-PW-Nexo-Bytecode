@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Icono from '../../components/Icono';
 import logoEmpresa from '../../assets/logo-origenes-sv.png';
+import logoNexo from '../../assets/logo-nexo.jpeg';
 
 const inputClase =
   'w-full rounded-xl border border-origen-500/50 bg-white/95 p-2.5 text-origen-950 placeholder-origen-500 focus:border-origen-700 focus:outline-none focus:ring-1 focus:ring-origen-700';
@@ -54,10 +55,18 @@ export default function Login() {
                 ✕
               </button>
             </div>
-            <p className="mb-2 text-xs leading-relaxed text-origen-950/90">
-              Ofrecemos un software de gestión de negocios, enfocándonos en orden operativo, tiempos ágiles y
-              una experiencia confiable para ti y tu equipo.
-            </p>
+            {/* Texto con el logo del equipo a un lado */}
+            <div className="mb-2 flex items-center gap-3">
+              <p className="text-xs leading-relaxed text-origen-950/90">
+                Ofrecemos un software de gestión de negocios, enfocándonos en orden operativo, tiempos ágiles y
+                una experiencia confiable para ti y tu equipo.
+              </p>
+              <img
+                src={logoNexo}
+                alt="Logo de Nexo Bytecode"
+                className="h-16 w-16 shrink-0 rounded-lg border border-origen-300 bg-white object-contain p-0.5"
+              />
+            </div>
             <p className="text-[11px] font-medium text-origen-500">Nexo Bytecode • Proyecto 2026</p>
           </div>
         )}
