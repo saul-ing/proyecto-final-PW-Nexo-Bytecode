@@ -44,7 +44,8 @@ export async function descontarStock(tx, sucursalId, items, referencia) {
 
 // Para Johann (Compras): suma stock de un insumo en la sucursal.
 // Cambio: una sola función; upsert crea el stock si la sucursal aún no lo tiene
-export async function sumarStock(tx, sucursalId, insumoId, cantidad, referencia) {
+// tipo: COMPRA por defecto; al anular una venta se manda AJUSTE
+export async function sumarStock(tx, sucursalId, insumoId, cantidad, referencia, tipo = 'COMPRA') {
   await tx.stockSucursal.upsert({
     where: { insumoId_sucursalId: { insumoId, sucursalId } },
     create: { insumoId, sucursalId, cantidad },
@@ -53,6 +54,6 @@ export async function sumarStock(tx, sucursalId, insumoId, cantidad, referencia)
 
   // Nuevo: la entrada se registra en el kardex
   await tx.movimientoInventario.create({
-    data: { tipo: 'COMPRA', cantidad, referencia, insumoId, sucursalId },
+    data: { tipo, cantidad, referencia, insumoId, sucursalId },
   });
 }

@@ -13,6 +13,10 @@ export function errorHandler(err, req, res, next) {
   if (err.code === 'P2002') {
     status = 409;
     message = 'Ya existe un registro con ese valor único';
+  } else if (err.code === 'P2003') {
+    // Llave foránea: se mandó el id de algo que no existe (sucursal, insumo...)
+    status = 400;
+    message = 'Uno de los registros relacionados no existe';
   } else if (err.code === 'P2025') {
     status = 404;
     message = 'Registro no encontrado';
