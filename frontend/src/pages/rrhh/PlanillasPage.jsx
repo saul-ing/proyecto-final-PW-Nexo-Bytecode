@@ -13,6 +13,9 @@ const fecha = (f) => (f ? new Date(f).toLocaleDateString('es-SV') : '-');
 
 const FECHAS_VACIAS = { fechaInicio: '', fechaFin: '' };
 
+// En la base la planilla pagada queda como APROBADA; en pantalla se muestra "PAGADA"
+const textoEstado = (estado) => (estado === 'APROBADA' ? 'PAGADA' : estado);
+
 function PlanillasPage() {
   const [planillas, setPlanillas] = useState([]);
   const [form, setForm] = useState(FECHAS_VACIAS);
@@ -122,7 +125,7 @@ const cargar = () =>
                 <td className={tdClase}>{fecha(p.fechaInicio)} al {fecha(p.fechaFin)}</td>
                 <td className={tdClase}>{p.tipo}</td>
                 <td className={tdClase}>
-                  <Insignia color={p.estado === 'PAGADA' ? 'verde' : 'amarillo'}>{p.estado}</Insignia>
+                  <Insignia color={p.estado === 'APROBADA' ? 'verde' : 'amarillo'}>{textoEstado(p.estado)}</Insignia>
                 </td>
                 <td className={`${tdClase} text-right`}>
                   <button type="button" onClick={() => ver(p.id)} className={botonGris}>
@@ -142,7 +145,7 @@ const cargar = () =>
         <Modal onCerrar={() => setDetalle(null)} ancho="max-w-4xl">
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-bold text-origen-950">Planilla #{detalle.id}</h2>
-            <Insignia color={detalle.estado === 'PAGADA' ? 'verde' : 'amarillo'}>{detalle.estado}</Insignia>
+            <Insignia color={detalle.estado === 'APROBADA' ? 'verde' : 'amarillo'}>{textoEstado(detalle.estado)}</Insignia>
           </div>
           <p className="text-sm text-gray-500">
             {fecha(detalle.fechaInicio)} al {fecha(detalle.fechaFin)} · {detalle.tipo}

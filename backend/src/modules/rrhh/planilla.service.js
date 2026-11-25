@@ -77,5 +77,6 @@ export async function marcarPagada(id) {
   const planilla = await prisma.planilla.findUnique({ where: { id } });
   if (!planilla) throw new AppError('Planilla no encontrada', 404);
   if (planilla.estado !== 'BORRADOR') throw new AppError('La planilla ya no está en borrador', 409);
-  return prisma.planilla.update({ where: { id }, data: { estado: 'PAGADA' } });
+  // El enum EstadoPlanilla solo tiene BORRADOR y APROBADA; APROBADA es la planilla ya pagada
+  return prisma.planilla.update({ where: { id }, data: { estado: 'APROBADA' } });
 }
