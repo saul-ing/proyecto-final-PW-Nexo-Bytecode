@@ -3,6 +3,15 @@ import { prisma } from '../../config/db.js';
 // Cambio: errores con AppError en vez de res.status(400)
 import { AppError } from '../../utils/AppError.js';
 
+// Valida que un valor sea un número mayor o igual a 0 (o mayor a 0 si positivo = true)
+function numeroValido(valor, campo, positivo = false) {
+  const n = Number(valor);
+  if (!Number.isFinite(n) || n < 0 || (positivo && n === 0)) {
+    throw new AppError(`${campo} debe ser un número ${positivo ? 'mayor a 0' : 'mayor o igual a 0'}`, 400);
+  }
+  return n;
+}
+
 // ---------- INSUMOS ----------
 // El stock es por sucursal (tabla StockSucursal). La sucursal sale del token del usuario.
 
@@ -41,6 +50,9 @@ export async function crearInsumo(req, res, next) {
     const sucursalId = req.usuario.sucursalId;
     const { nombre, unidad, costoUnitario = 0, cantidad = 0, stockMinimo = 0 } = req.body;
     if (!nombre || !unidad) throw new AppError('Nombre y unidad son obligatorios', 400);
+    numeroValido(costoUnitario, 'El costo unitario');
+    numeroValido(cantidad, 'El stock inicial');
+    numeroValido(stockMinimo, 'El stock mínimo');
 
     // Cambio: insumo + stock + kardex en una transacción
     const insumo = await prisma.$transaction(async (tx) => {
@@ -76,6 +88,8 @@ export async function editarInsumo(req, res, next) {
     const sucursalId = req.usuario.sucursalId;
     const insumoId = Number(req.params.id);
     const { nombre, unidad, costoUnitario, stockMinimo } = req.body;
+    numeroValido(costoUnitario, 'El costo unitario');
+    numeroValido(stockMinimo, 'El stock mínimo');
 
     const insumo = await prisma.insumo.update({
       where: { id: insumoId },
@@ -117,6 +131,10 @@ function datosProducto(body, editando = false) {
   if (!nombre || !tipo || !precio || !categoria) {
     throw new AppError('Nombre, tipo, precio y categoría son obligatorios', 400);
   }
+  if (!['ELABORADO', 'REVENTA'].includes(tipo)) {
+    throw new AppError('El tipo debe ser ELABORADO o REVENTA', 400);
+  }
+  numeroValido(precio, 'El precio', true);
   if (tipo === 'REVENTA' && !insumoReventaId) {
     throw new AppError('Un producto de reventa necesita su insumo', 400);
   }
@@ -210,6 +228,7 @@ export async function guardarReceta(req, res, next) {
     if (!Array.isArray(lineas) || lineas.length === 0) {
       throw new AppError('La receta necesita al menos un insumo', 400);
     }
+    for (const l of lineas) numeroValido(l.cantidad, 'La cantidad de cada insumo', true);
 
     await prisma.$transaction([
       // Cambio: la tabla se llama RecetaItem
