@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Icono from '../../components/Icono';
-import logoNexo from '../../assets/logo-nexo.jpeg';
+import logoEmpresa from '../../assets/logo-origenes-sv.png';
 
 const inputClase =
   'w-full rounded-xl border border-origen-500/50 bg-white/95 p-2.5 text-origen-950 placeholder-origen-500 focus:border-origen-700 focus:outline-none focus:ring-1 focus:ring-origen-700';
@@ -150,8 +150,8 @@ export default function Login() {
 
           {/* Columna derecha: logo del equipo (solo en pantallas medianas o más) */}
           <div className="hidden w-1/2 self-stretch pl-2 md:block">
-            <div className="flex h-full min-h-80 items-center justify-center rounded-2xl bg-white p-6 shadow-md">
-              <img src={logoNexo} alt="Logo de Nexo Bytecode" className="max-h-72 w-full object-contain" />
+            <div className="flex h-full min-h-80 items-center justify-center">
+              <img src={logoEmpresa} alt="Logo de empresa Origenes SV" className="h-72 w-72 rounded-2xl object-cover" />
             </div>
           </div>
         </div>
