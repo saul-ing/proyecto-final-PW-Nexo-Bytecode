@@ -18,8 +18,9 @@ export async function login(email, password) {
     throw new AppError('Email y contraseña son obligatorios', 400);
   }
 
+  // Los correos se guardan en minúsculas; así no importa cómo lo escriba el usuario
   const usuario = await prisma.usuario.findUnique({
-    where: { email },
+    where: { email: String(email).trim().toLowerCase() },
     include: { sucursal: true },
   });
 
