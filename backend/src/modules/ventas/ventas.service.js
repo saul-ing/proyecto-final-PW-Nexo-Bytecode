@@ -51,8 +51,9 @@ export async function registrarVenta({ sucursalId, usuarioId, tipoDocumento, cli
     }
 
     const cantidad = Number(item.cantidad);
-    if (!Number.isFinite(cantidad) || cantidad <= 0) {
-      throw new AppError(`La cantidad para el producto ${producto.nombre} debe ser mayor a 0`, 400);
+    // Se venden unidades completas: 1, 2, 3...
+    if (!Number.isInteger(cantidad) || cantidad <= 0) {
+      throw new AppError(`La cantidad para el producto ${producto.nombre} debe ser un número entero mayor a 0`, 400);
     }
 
     const precioConIva = Number(producto.precio);
@@ -166,7 +167,8 @@ export async function listarVentas({ sucursalId, turnoId, fecha }) {
       cliente: true,
       usuario: { select: { id: true, nombre: true } },
       detalles: { include: { producto: true } },
-      pagos: true
+      pagos: true,
+      sucursal: true // para el encabezado de la factura
     },
     orderBy: { fecha: 'desc' }
   });
@@ -181,7 +183,8 @@ export async function obtenerVentaPorId(ventaId, sucursalId) {
       usuario: { select: { id: true, nombre: true } },
       detalles: { include: { producto: true } },
       pagos: true,
-      turno: true
+      turno: true,
+      sucursal: true
     }
   });
 
@@ -240,7 +243,8 @@ export async function anularVenta(ventaId, sucursalId) {
           sucursalId,
           linea.insumoId,
           cantidadDevolver,
-          referenciaAnulacion
+          referenciaAnulacion,
+          'AJUSTE' // en el kardex no es una compra, es la devolución por anular
         );
       }
     }

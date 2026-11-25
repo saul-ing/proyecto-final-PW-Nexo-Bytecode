@@ -21,7 +21,9 @@ export default function VistaFactura({ venta, onClose }) {
 
         <div className="p-6">
           <div className="mb-4 text-center">
-            <h4 className="text-lg font-bold text-gray-900">{venta.sucursal?.nombre || "NEXO BYTECODE"}</h4>
+            {/* El que emite la factura es el restaurante, no el equipo */}
+            <h4 className="text-lg font-bold text-gray-900">ORÍGENES SV</h4>
+            {venta.sucursal?.nombre && <p className="text-xs font-semibold text-gray-700">Sucursal {venta.sucursal.nombre}</p>}
             {venta.sucursal?.direccion && <p className="text-xs text-gray-600">{venta.sucursal.direccion}</p>}
             {venta.sucursal?.telefono && <p className="text-xs text-gray-600">Tel: {venta.sucursal.telefono}</p>}
             <div className="my-2 border-b border-gray-200" />
