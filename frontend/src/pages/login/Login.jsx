@@ -16,6 +16,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [verAyuda, setVerAyuda] = useState(false);
+  const [verNosotros, setVerNosotros] = useState(false);
 
   if (usuario) return <Navigate to="/" replace />;
 
@@ -35,6 +36,42 @@ export default function Login() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-origen-100 p-4 text-origen-950">
+      {/* Botón y panel "Sobre nosotros" */}
+      <div className="fixed bottom-4 left-4 z-10 flex flex-col items-start gap-2">
+        {verNosotros && (
+          <div className="w-72 rounded-2xl border border-origen-300 bg-white p-4 shadow-xl">
+            <div className="mb-2.5 flex items-center justify-between border-b border-origen-300 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-origen-700"></span>
+                <h3 className="text-sm font-bold text-origen-700">Sobre nosotros</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVerNosotros(false)}
+                className="px-1 text-sm font-bold text-origen-500 hover:text-origen-950"
+                aria-label="Cerrar información"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="mb-2 text-xs leading-relaxed text-origen-950/90">
+              Ofrecemos un software de gestión de negocios, enfocándonos en orden operativo, tiempos ágiles y
+              una experiencia confiable para ti y tu equipo.
+            </p>
+            <p className="text-[11px] font-medium text-origen-500">Nexo Bytecode • Proyecto 2026</p>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setVerNosotros(!verNosotros)}
+          aria-expanded={verNosotros}
+          className="flex items-center gap-2 rounded-full bg-origen-700 px-4 py-2.5 text-xs font-medium text-origen-100 shadow-lg duration-300 hover:scale-105 hover:bg-origen-950"
+        >
+          <Icono nombre="info" tamano={16} />
+          Sobre nosotros
+        </button>
+      </div>
+
       <section className="w-full max-w-3xl">
         <div className="flex items-center rounded-2xl border border-origen-500/30 bg-origen-300/55 p-5 shadow-xl backdrop-blur-sm">
           {/* Columna izquierda: formulario */}
