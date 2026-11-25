@@ -10,10 +10,17 @@ export async function generarPlanilla({ fechaInicio, fechaFin, sucursalId }) {
     throw new AppError('Rango de fechas inválido', 400);
   }
 
+  // Busca planillas que se crucen con estas fechas (para no pagar dos veces el mismo día).
+  // Una planilla sin sucursal es de todas, así que choca con cualquiera.
   const duplicada = await prisma.planilla.findFirst({
-    where: { tipo: 'QUINCENAL', fechaInicio: inicio, fechaFin: fin, sucursalId: sucursalId ?? null },
+    where: {
+      tipo: 'QUINCENAL',
+      fechaInicio: { lte: fin },
+      fechaFin: { gte: inicio },
+      ...(sucursalId && { OR: [{ sucursalId }, { sucursalId: null }] }),
+    },
   });
-  if (duplicada) throw new AppError('Ya existe una planilla para ese período', 409);
+  if (duplicada) throw new AppError('Ya existe una planilla que incluye parte de ese período', 409);
 
   const [empleados, tramos] = await Promise.all([
     prisma.empleado.findMany({
