@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getEmpleados, crearEmpleado, editarEmpleado, desactivarEmpleado, getSucursales } from '../../api/rrhhApi';
+import { useAuth } from '../../context/AuthContext';
 
 import Icono from '../../components/Icono';
 import { Alerta, Campo, Encabezado, FilaVacia, Insignia } from '../../components/ui';
@@ -17,6 +18,7 @@ const EMPLEADO_VACIO = {
 };
 
 function EmpleadosPage() {
+  const { usuario } = useAuth();
   const [empleados, setEmpleados] = useState([]);
   const [sucursales, setSucursales] = useState([]);
   const [form, setForm] = useState(EMPLEADO_VACIO);
@@ -118,7 +120,7 @@ function EmpleadosPage() {
 
   return (
     <div>
-      <Encabezado icono="badge" titulo="Empleados" descripcion="Baristas, cajeros y gerentes de todas las sucursales" />
+      <Encabezado icono="badge" titulo="Empleados" descripcion={usuario?.rol === 'ADMIN' ? 'Baristas, cajeros y gerentes de todas las sucursales' : 'Baristas, cajeros y gerentes de tu sucursal'} />
 
       {error && <Alerta tipo="error" onCerrar={() => setError('')}>{error}</Alerta>}
       {mensaje && <Alerta tipo="ok" onCerrar={() => setMensaje('')}>{mensaje}</Alerta>}
