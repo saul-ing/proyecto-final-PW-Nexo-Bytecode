@@ -42,10 +42,10 @@ export default function AppRouter() {
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/pos" element={<PosPage />} />
 
-            {/* Ventas: ADMIN, GERENTE y CAJERO */}
+            {/* POS y Ventas: ADMIN, GERENTE y CAJERO (igual que el backend) */}
             <Route element={<ProtectedRoute roles={['ADMIN', 'GERENTE', 'CAJERO']} />}>
+              <Route path="/pos" element={<PosPage />} />
               <Route path="/ventas" element={<HistorialVentas />} />
               <Route path="/ventas/:id" element={<VistaFactura />} />
             </Route>

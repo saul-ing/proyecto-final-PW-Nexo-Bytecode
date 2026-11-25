@@ -62,7 +62,10 @@ export default function Dashboard() {
         <Indicador icono="lock_clock" titulo="Turno de caja" valor={mostrar(datos.turno)} />
       </div>
 
-      <h2 className="mb-3 text-lg font-semibold text-origen-950">Accesos rápidos</h2>
+      {/* El barista no tiene módulos aparte del dashboard */}
+      {accesos.length > 0 && (
+        <h2 className="mb-3 text-lg font-semibold text-origen-950">Accesos rápidos</h2>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {accesos.map((m) => (
           <Link
