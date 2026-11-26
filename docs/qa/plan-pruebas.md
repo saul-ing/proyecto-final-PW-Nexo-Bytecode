@@ -12,7 +12,7 @@ Prepara una base desechable con la [guía de despliegue](../despliegue-local.md)
 | INV02 | Comparar existencias antes y después de las dos ventas | Consumo de 36 g de café, 500 ml de leche y dos unidades de cada empaque. |
 | INV03 | Vender un artículo de reventa y consultar la alerta al llegar al mínimo | Se descuenta el insumo asociado y se muestra su alerta. |
 | COM01 | Comprar a crédito 100 g de café | El stock aumenta en 100 g y se crea una cuenta por pagar. |
-| COM02 | Registrar un abono parcial y luego liquidar el saldo | Se actualizan monto y estado después de cada abono. Ejecución secuencial pendiente. |
+| COM02 | Registrar un abono parcial y luego liquidar el saldo | El primer abono deja la cuenta PARCIAL. Al liquidar el saldo, queda PAGADA en $0.00. |
 | CAJ01–02 | Cerrar con $27 en efectivo tras las dos ventas | La diferencia de efectivo es cero. |
 | CAJ04 | Vender con efectivo, tarjeta, Bitcoin y Chivo Wallet y cerrar el turno | Efectivo y tarjeta cuadran por separado. Bitcoin y Chivo Wallet se agrupan en digital. |
 | INV04 | Enviar valores negativos de stock, costo, precio y cantidad de receta | Cada solicitud devuelve HTTP 400. |

@@ -9,7 +9,7 @@ Fuente: enunciado de Programación Web, ciclo 02 de 2026, pp. 1–5. Implementac
 | Al menos 12 productos elaborados | Seed de 15 elaborados y cuatro de reventa | INV01 consultó los 19 productos. |
 | Descuento por receta | RecetaItem, StockSucursal y kárdex | INV02 comprobó los cinco insumos del Latte Grande. |
 | Reventa y alertas | Insumo asociado y existencias comparadas con el mínimo | INV03 comprobó el descuento de una unidad de agua y la alerta al alcanzar el mínimo. |
-| Compras y cuentas por pagar | Proveedor, Compra, CuentaPorPagar y Abono | COM01 comprobó ingreso y cuenta. COM02-C verificó que solo uno de dos abonos simultáneos por el saldo completo se aplicó. |
+| Compras y cuentas por pagar | Proveedor, Compra, CuentaPorPagar y Abono | COM01 comprobó ingreso y cuenta. COM02 comprobó el abono parcial y la liquidación. COM02-C verificó que solo uno de dos abonos simultáneos por el saldo completo se aplicó. |
 | Apertura, cierre y cuadre | Turno vinculado a ventas y pagos | CAJ01–02 comprobó el cierre en efectivo, CAJ03 la apertura concurrente y CAJ04 el cuadre de pagos mixtos. |
 | Personal y planilla quincenal | Empleado, Planilla, TramoRenta y deducciones | NOM01–02 generó ocho líneas y contrastó las deducciones de una. |
 | React, rutas, estilos y REST | React, Tailwind, Router, Axios y Express | TEC01 y UI01. |
