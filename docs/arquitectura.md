@@ -1,15 +1,25 @@
-# Documentación técnica
+# Arquitectura
 
-Inspección: 2026-11-16, develop 7c53311. Stack declarado: React 19, Vite 8, Tailwind 4, Express 5, Prisma 6 y PostgreSQL. Las versiones exactas instaladas se registran en verificación; los rangos de package.json no prueban compatibilidad.
+Referencia de implementación: `develop`, commit `5c17615`.
 
-Flujo previsto: navegador — cliente Axios — Express /api — controlador — Prisma — PostgreSQL. App.jsx sigue siendo plantilla y no monta las páginas ni BrowserRouter. Las páginas de inventario existen, pero aún no constituyen una interfaz navegable. No hay módulos de ventas, compras, caja o RRHH montados en routes.js. Ramas remotas observadas por git ls-remote: ventas-facturacion, caja-turnos, compras-proveedores e inventario-recetas. No se inspeccionó ni integró su contenido; no se atribuye ausencia de trabajo a sus responsables.
+```mermaid
+flowchart LR
+    U["Operador por sucursal"] --> F["React · Vite · Tailwind"]
+    F -->|"HTTP JSON · JWT"| A["Express · controladores"]
+    A --> S["Servicios de negocio"]
+    S --> P["Prisma ORM"]
+    P --> D[("PostgreSQL")]
+```
 
-Backend: app.js configura JSON y CORS únicamente para http://localhost:5173. server.js escucha PORT (3000 por defecto). env.js exige JWT_SECRET; dotenv resuelve .env desde el directorio de ejecución. Auth emite JWT por 8h con id, rol y sucursalId, verifica contraseña bcrypt y usuario activo durante login. autenticar valida token; permitirRoles existe, pero inventario solo aplica autenticar. Debe acordarse la autorización de escrituras por rol. No cambiar políticas de negocio sin aprobación.
+La interfaz monta inicio de sesión, panel, POS, ventas, inventario, compras, caja y RR. HH. Las rutas y el menú usan el rol para habilitar módulos. El cliente Axios compartido adjunta el token y devuelve la sesión al login ante una respuesta 401 de un módulo. La API valida el token; las reglas de sucursal y de rol se aplican en los módulos correspondientes.
 
-Inventario: catálogo global, stock por sucursal obtenida del token, baja lógica por activo=false. Creación de insumo/stock/kardex en transacción; edición de insumo y mínimo son dos operaciones independientes. Receta se reemplaza en transacción. descontarStock recibe transacción del llamador, usa updateMany con cantidad>=consumo y registra VENTA. sumarStock hace upsert y registra COMPRA; el módulo llamador debe incluir factura/cuenta en esa misma transacción. No se ha probado atomicidad real ni concurrencia contra PostgreSQL.
+| Capa | Ubicación | Responsabilidad |
+|---|---|---|
+| Interfaz | `frontend/src/pages`, `routes`, `api` | Formularios, navegación, solicitudes y presentación de errores |
+| API | `backend/src/routes.js`, `backend/src/modules` | Rutas, validación y servicios por módulo |
+| Persistencia | `backend/prisma` | Esquema, migraciones y datos de demostración |
+| Entrega y QA | `docs` | Guía de arranque, manual, trazabilidad y verificación |
 
-Errores: AppError proporciona estado HTTP; P2002 se traduce a 409 y P2025 a 404; errores internos devuelven mensaje genérico 500. Decimales Prisma pueden serializarse como strings, el cliente los convierte a Number para mostrar. No asumir exactitud financiera sin pruebas de redondeo.
+Ventas agrupa correlativo, descuento de existencias, kárdex y creación de la venta en una transacción. El control de inventario usa stock por insumo y sucursal. Una compra registra su detalle, entrada de inventario y cuenta por pagar cuando corresponde. Caja calcula las diferencias por medio de pago; RR. HH. aplica las deducciones y el tramo de renta de la quincena.
 
-Configuración: DATABASE_URL y JWT_SECRET son secretos del backend; PORT es configurable. VITE_API_URL se incrusta al compilar y nunca debe contener secretos. No copiar .env al repositorio. Las cuentas QA son ficticias. El servidor local de scripts sirve dist y reenvía /api al backend: ambas peticiones comparten origen y no requieren cambiar CORS. Se limita a loopback; no constituye publicación ni hosting de producción.
-
-Limitaciones registradas en docs/qa/incidencias.md. Ver api.md, db.md, despliegue-local.md y qa/plan-pruebas.md. No hay certificación de seguridad, fiscalidad ni instalación en otro equipo.
+Véanse los [contratos HTTP](api.md), el [modelo de datos](db.md), la [guía de despliegue](despliegue-local.md) y la [verificación](qa/verificacion.md).

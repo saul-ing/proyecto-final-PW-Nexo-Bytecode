@@ -1,42 +1,29 @@
-# Registro de verificación
+# Verificación de la versión integrada
 
-Fecha: 2026-11-16 (America/Guatemala). Código base evaluado: develop `7c533111f570b44d1a0033d187bc5a0ebdddae33`; adiciones realizadas en feature/qa-documentacion-despliegue. Los commits de esta rama identifican los artefactos de QA y despliegue; no se evaluaron contenidos de ramas ajenas.
+Fecha: 25 de noviembre de 2026. Versión: `develop`, commit `5c17615`. Entorno: Windows, Node 24.21.0, Prisma 6.19.3, PostgreSQL 18 y Chrome. Se usó una copia temporal, una base nueva en loopback y el seed principal del proyecto.
 
-Entorno real: Windows, Node v24.21.0, npm 11.19.0, Prisma CLI/cliente 6.19.3, Vite compilador 8.3.7. PostgreSQL: versión/conexión NO verificadas. No se leyeron .env privados ni se migraron bases. Pruebas HTTP/servidor usan DATABASE_URL ficticia a puerto 1 y no acceden a PostgreSQL.
-
-| Verificación | Resultado real | Alcance/evidencia |
+| ID | Verificación | Evidencia |
 |---|---|---|
-| Estado inicial Git | APROBADA | develop limpio; base 7c53311 |
-| Instrucciones locales | Revisión realizada | rg no encontró AGENTS.md en repositorio; sin archivo en directorio Escritorio |
-| GitHub: git ls-remote --heads origin | APROBADA | develop coincide con 7c53311; ramas caja-turnos, compras-proveedores, inventario-recetas, ventas-facturacion; sin merge/fetch/push |
-| npm ci backend | APROBADA con avisos | 144 paquetes añadidos; auditoría: 5 vulnerabilidades, 2 moderadas/3 altas; scripts Prisma requieren generación explícita |
-| npm ci frontend | APROBADA con avisos | 183 paquetes añadidos; auditoría: 3 moderadas |
-| npm run db:generate | APROBADA | Cliente Prisma 6.19.3 generado, sin conexión DB |
-| prisma validate desde backend | APROBADA | Esquema válido; URL ficticia |
-| npm run qa:test | APROBADA | 7 comprobaciones, 0 fallos: catálogo, grupo HTTP y 5 subpruebas health/404/sin token/token inválido/login vacío |
-| npm run build:frontend | APROBADA con alcance limitado | Vite 8.3.7, 20 módulos; App plantilla, no prueba pantallas inventario |
-| npm --prefix frontend run lint | FALLIDA | Dos errores react-hooks/set-state-in-effect: InsumosPage.jsx:27, ProductosPage.jsx:28; QA-07 |
-| node --check servidor local y seed QA | APROBADA | Sintaxis; no valida ejecución DB |
-| Barreras seed QA | APROBADA | URL de otra base y contraseña corta rechazadas antes de conectar; subprocesos retornaron error esperado |
-| Servidor local + backend | APROBADA | Puertos temporales 15173/13000: / y fallback SPA 200, /api/health proxy 200, asset faltante 404, API apagada 502; procesos cerrados |
-| Excel seguimiento | APROBADA estructural | Generado con Python stdlib; ZIP íntegro y todos los XML parseados; apertura visual en Excel NO EJECUTADA |
-| Carga/repetición fixtures | NO EJECUTADA | Requiere base local origenes_erp_qa configurada; idempotencia DB no demostrada |
-| Login correcto, aislamiento de sucursal y CRUD DB | NO EJECUTADA | Requiere PostgreSQL QA; no se inventan respuestas |
-| Ventas, compras, caja, nómina y flujo E2E | BLOQUEADA | Integración de módulos y UI; ver matriz y plan |
-| Instalación desde otro equipo/clon limpio | NO EJECUTADA | No declarar portabilidad comprobada |
-| IEEE final y fuentes legales | PENDIENTE | Borrador sin maquetar; autores/fuentes/ISR por verificar |
+| DEP01 | Migración y seed | Se aplicó `20261113032006_init` y el seed finalizó. La aplicación inició con sus datos. |
+| API01 | Salud y autenticación | Salud HTTP 200 y sucursales sin sesión HTTP 401. Las cuatro cuentas del seed iniciaron sesión. POS aceptó ADMIN, GERENTE y CAJERO y devolvió 403 a BARISTA. RR. HH. aceptó ADMIN y GERENTE y devolvió 403 a CAJERO y BARISTA. |
+| SUC01 | Aislamiento entre sucursales | Se consultaron las tres sucursales. Se agregó una cuenta temporal para Santa Tecla. La venta de agua en Casa Matriz dejó el stock de Santa Tecla en 100 y consultar el comprobante desde esa sede devolvió HTTP 404. |
+| INV01 | Catálogo POS | 19 productos consultados. Latte Grande visible en el catálogo. |
+| VEN01–02 | Venta CF y CCF | Se registraron y consultaron ambos comprobantes. Cada uno totalizó $3.50, con base $3.10 e IVA $0.40. Para CCF se seleccionó un cliente del seed. |
+| INV02 | Descuento por receta | Dos bebidas descontaron 36 g de café, 500 ml de leche y dos vasos, dos tapaderas y dos viñetas. |
+| COM01 | Compra a crédito | Compra registrada, aumento de 100 g de café y cuenta por pagar consultada. |
+| CAJ01–02 | Apertura y cierre | Fondo de $20 y dos ventas en efectivo por $7. Cierre con $27 y diferencias cero. |
+| NOM01–02 | Planilla | Generación desde el formulario y consulta de ocho detalles para el período del 1 al 15 de noviembre de 2026. Para $950 mensuales, se comprobó bruto de $475.00, ISSS $14.25, AFP $34.44, renta $23.96 y neto $402.35. |
+| COM02 | Abono parcial y liquidación | Factura LE-501 del seed, saldo inicial $41.81. Un abono de $10.00 dejó saldo $31.81 y estado PARCIAL. El abono de $31.81 dejó saldo $0.00 y estado PAGADA. Ambas solicitudes devolvieron HTTP 201 y quedaron registrados los dos abonos. |
+| COM02-C | Abonos simultáneos | Dos solicitudes por el saldo completo de la misma cuenta. Una devolvió 201 y la otra 409. La cuenta quedó PAGADA con saldo cero. |
+| CAJ03 | Aperturas simultáneas | Diez rondas de cinco solicitudes para el mismo usuario. Cada ronda produjo un 201 y cuatro 409. Se cerró el único turno de cada ronda. |
+| INV03 | Reventa y mínimo | Se fijó el mínimo del agua en 99 en Casa Matriz. La venta redujo el stock de 100 a 99 y apareció la alerta en esa sede. |
+| INV04 | Valores negativos | Stock, costo, precio y cantidad de receta negativos devolvieron HTTP 400. |
+| CAJ04 | Cierre con pagos mixtos | Venta de $1.00, repartida en cuatro pagos de $0.25. Con fondo de $20.00, el cierre esperaba $20.25 en efectivo, $0.25 en tarjeta y $0.50 en digital (Bitcoin y Chivo Wallet). Las tres diferencias fueron cero. |
+| UI01 | Pantallas en ejecución | Se capturaron inicio de sesión, POS, inventario, cuentas por pagar y planillas. |
+| TEC01 | Lint y compilación | ESLint y build de producción de `develop` pasaron en la revisión del 25 de noviembre. |
 
-Durante la primera ejecución falló `npm --prefix backend exec -- prisma generate` porque npm exec no cambió el directorio al esquema. Se reemplazó por scripts npm run ejecutados en backend, se generó cliente y se repitió QA: las 7 comprobaciones pasaron. No se ocultó el fallo inicial ni se atribuyó a lógica de negocio.
+La planilla se generó en Chrome, con zona horaria de El Salvador (UTC−6). El formulario envió las fechas a las 12:00 y el listado mostró del 1 al 15 de noviembre. Las ventas, la compra y el cierre se comprobaron por HTTP sobre PostgreSQL. La captura de cuentas por pagar se tomó antes de registrar la compra de verificación. Para repetir la revisión, sigue la [guía de despliegue](../despliegue-local.md) y el [plan de pruebas](plan-pruebas.md).
 
-Para reproducir, seguir despliegue-local.md y ejecutar `npm run db:generate`, `npm run qa:test`, `npm run build:frontend`, `npm --prefix frontend run lint`. Registrar commit propio con `git rev-parse HEAD` y conservar resultados sin secretos. La compilación por sí sola no valida requisitos académicos ni la interfaz completa.
+## Evidencia de aportes de QA
 
-## Ampliación QA — 2026-11-16
-
-Base de esta ampliación: 70e34bc; misma rama, sin cambios iniciales pendientes. El historial ya muestra origin/feature/qa-documentacion-despliegue; esta sesión no hizo push. Se revisó el autor Andres070212: formato observado emoji + tipo(área): descripción breve. Se conserva la autoría configurada del usuario.
-
-- `npm run qa:test`: APROBADA, 24 comprobaciones, 0 fallos. Incluye las 7 anteriores, 11 operaciones de inventario sin token y 4 escenarios adicionales de token/encabezado, con sus grupos contabilizados por node:test. No se accedió a PostgreSQL.
-- `npm run qa:entorno`: salida 1 esperada por pendientes. Dependencias, cliente generado y frontend compilado presentes. Falta backend/.env y configuración frontend VITE_API_URL=/api. El script no lee secretos del backend ni comprueba conexión DB; comprueba la presencia de archivos y la variable pública del frontend.
-- Consulta de servicios `Get-Service '*postgres*'`: no devolvió servicios en esta máquina; psql no encontrado en PATH. Esto no descarta otra instalación, contenedor o servidor externo. No se inició ni instaló PostgreSQL.
-- Las pruebas de login válido, CRUD persistente, recetas, stocks por sucursal y repetición del fixture siguen NO EJECUTADAS hasta disponer de PostgreSQL QA y configuración. No se tocaron módulos de compañeros.
-
-Siguiente paso: configurar exclusivamente origenes_erp_qa siguiendo la guía Windows, generar cliente, aplicar migraciones versionadas y ejecutar el fixture. Para configurar credenciales se necesita la configuración local del propietario; no se debe inventar acceso ni usar su base de trabajo.
+Los commits de QA y despliegue que se citan en el Excel se conservan en la rama original. Se pueden consultar en GitHub: [matriz y documentación](https://github.com/saul-ing/proyecto-final-PW-Nexo-Bytecode/commit/7fea7a70294fa28b978b450db80d4465223d4da2), [pruebas de contrato](https://github.com/saul-ing/proyecto-final-PW-Nexo-Bytecode/commit/e9f8b0c99b2a21bad55b0b02c28fbfb0b4d2e0fb) y [demostración local](https://github.com/saul-ing/proyecto-final-PW-Nexo-Bytecode/commit/70e34bc8a246ffbf2577f61e6170940cad389547).

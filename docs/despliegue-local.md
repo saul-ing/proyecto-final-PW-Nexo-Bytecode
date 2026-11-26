@@ -1,51 +1,33 @@
-# Instalación y demostración local en Windows
+# Despliegue local en Windows
 
-Objetivo: una computadora local, sin hosting ni dominio. Servir frontend compilado y API en loopback. No hace falta Nginx/Apache: scripts/serve-local.mjs ofrece estáticos y proxy /api para esta demostración. No se presenta como servidor de publicación en internet.
+Guía para el código integrado de `develop` en `5c17615`. Se requieren Node.js, npm y una instancia local de PostgreSQL (verificado con la versión 18). Ejecuta estos comandos desde la raíz de un clon de la aplicación.
 
-Entorno evaluado: Windows, Node v24.21.0, npm 11.19.0. PostgreSQL debe instalarse y su versión registrarse con `psql --version`; no se declara probado todavía. Los lockfiles están versionados: usar npm ci por proyecto.
+1. Enciende PostgreSQL y crea una base nueva llamada `origenes_erp` con un usuario que pueda crear y modificar tablas. Usa una base desechable para la demostración.
+2. Instala dependencias y prepara los archivos de entorno.
 
-Desde PowerShell, para clon nuevo:
+   ```powershell
+   npm.cmd --prefix backend ci
+   npm.cmd --prefix frontend ci
+   Copy-Item backend/.env.example backend/.env
+   Copy-Item frontend/.env.example frontend/.env
+   ```
 
-```powershell
-git clone https://github.com/saul-ing/proyecto-final-PW-Nexo-Bytecode.git
-cd proyecto-final-PW-Nexo-Bytecode
-# Esta rama solo existe localmente hasta que su propietario decida publicarla.
-# Para reproducir esta entrega, usar un checkout que contenga sus commits.
-npm --prefix backend ci
-npm --prefix frontend ci
-Copy-Item backend/.env.example backend/.env
-Copy-Item frontend/.env.example frontend/.env
-```
+3. En `backend/.env`, ajusta `DATABASE_URL` con el usuario, la contraseña, el host y la base local. Define un `JWT_SECRET` local y deja `PORT=3000`. En `frontend/.env`, usa `VITE_API_URL=http://localhost:3000/api`.
+4. Genera el cliente Prisma y aplica las migraciones versionadas. Luego carga el seed principal.
 
-Crear mediante pgAdmin una base NUEVA llamada origenes_erp_qa y usuario local con permiso sobre ella. No borrar ni reutilizar bases existentes. Editar backend/.env: DATABASE_URL apuntando a esa base y JWT_SECRET aleatorio propio (no usar cambia_esto). Escapar caracteres especiales de la contraseña en URL. El .env permanece ignorado. Para preparar datos agregar QA_DEMO_PASSWORD con una contraseña ficticia de al menos 12 caracteres; no publicarla. Editar frontend/.env con VITE_API_URL=/api para compilación con proxy local.
+   ```powershell
+   Push-Location backend
+   try {
+       npx.cmd prisma generate
+       npx.cmd prisma migrate deploy
+       npm.cmd run db:seed
+   } finally {
+       Pop-Location
+   }
+   ```
 
-```powershell
-npm run db:generate
-npm run db:deploy
-npm run db:seed:qa
-npm run qa:test
-npm run build:frontend
-```
+5. Ejecuta `npm.cmd run dev:backend` y `npm.cmd run dev:frontend` en terminales separadas. Abre `http://localhost:5173` y usa una [cuenta de demostración](manual-usuario.md#cuentas-de-demostración). La API responde en `http://localhost:3000/api/health`.
 
-La carga QA solo admite host local y nombre origenes_erp_qa. Crea dos sucursales, dos usuarios ficticios (qa.centro@example.test y qa.norte@example.test), 13 insumos, 12 elaborados con recetas, dos reventas y stocks/kardex iniciales. Conserva registros existentes; no restablece existencias ni contraseñas al repetir. Ejecuciones concurrentes del fixture no están soportadas. No carga facturas, compras ni planillas inventadas. No carga tablas ISR sin fuente validada.
+El seed carga sucursales, usuarios, insumos con existencias, productos y recetas, clientes, proveedores, compras de ejemplo, cuentas por pagar, empleados y tramos de renta. Caja, ventas y planillas se generan al operar la aplicación. Al terminar la demostración, detén ambos procesos con Ctrl+C.
 
-Abrir dos terminales desde la raíz:
-
-```powershell
-# Terminal 1
-npm run start:backend
-# Terminal 2
-npm run start:local
-```
-
-Abrir http://127.0.0.1:5173 y consultar http://127.0.0.1:5173/api/health. La página actual sigue siendo plantilla Vite; compilarla no confirma integración funcional. Health tampoco valida conexión DB. El proxy usa API_PORT=3000 y LOCAL_PORT=5173 por defecto; si cambia PORT del backend, ajustar API_PORT al mismo valor. Apagar con Ctrl+C en ambas terminales; no detener PostgreSQL si otras aplicaciones lo usan.
-
-Para desarrollo usar VITE_API_URL=http://localhost:3000/api, reiniciar Vite y navegar mediante http://localhost:5173 (CORS actual). Para la demo compilada volver a /api y recompilar. No usar vite preview como solución de proxy: aquí el proxy está en el servidor local añadido.
-
-Problemas: 502 = backend apagado/puerto distinto; Prisma no inicializado = prisma generate; P1001 = revisar servicio/host/puerto; autenticación DB = revisar usuario y URL; EADDRINUSE = cerrar solo proceso propio o cambiar puertos; módulo Reactstrap faltante al integrar pantallas = dependencia del equipo frontend. No ejecutar migrate reset, db push ni audit fix --force para resolver a ciegas.
-
-Lista de comprobación: [ ] versión PostgreSQL y commit registrados; [ ] clon nuevo probado; [ ] .env sin secretos versionados; [ ] DB QA correcta; [ ] migraciones aplicadas; [ ] seed repetido sin duplicar; [ ] login y sucursales verificados; [ ] build y QA ejecutados; [ ] módulos integrados y casos P0 aprobados; [ ] saldos y stock verificados; [ ] Excel/manual/IEEE revisados; [ ] demo y apagado ensayados. Todos los elementos sin evidencia siguen pendientes.
-
-## Diagnóstico previo
-
-Ejecutar `npm run qa:entorno` desde la raíz. No modifica archivos, no inicia servicios y no imprime secretos. Retorna 1 si faltan archivos/configuración y 0 cuando pasan sus comprobaciones de archivos. Incluso con salida 0, verificar manualmente PostgreSQL, migraciones, conexión y flujos de negocio; tampoco demuestra que el build refleje el .env actual. Después de cambiar VITE_API_URL siempre recompilar.
+Para comprobar el paquete de producción del frontend, ejecuta `npm.cmd --prefix frontend run build`. El resultado queda en `frontend/dist`. Si se publica en otro origen, se debe configurar la URL de la API, el origen permitido por Express y el fallback de las rutas de la aplicación.

@@ -1,19 +1,38 @@
 # Base de datos
 
-PostgreSQL con Prisma; fuente: backend/prisma/schema.prisma y migración 20261113032006_init. No se ha comparado una base existente con el esquema.
+El esquema de `backend/prisma/schema.prisma` usa PostgreSQL. La verificación se ejecutó con PostgreSQL 18. Las migraciones versionadas viven en `backend/prisma/migrations`.
 
-| área | Entidades y relaciones |
-|---|---|
-| Base | Sucursal 1:N Usuario/Empleado/StockSucursal/Compra/Turno/Venta; Usuario.email único |
-| Inventario | Categoria.nombre e Insumo.nombre únicos; Producto→Categoria; REVENTA→Insumo opcional; Producto 1:N RecetaItem→Insumo |
-| Stock | StockSucursal único(insumoId,sucursalId); MovimientoInventario referencia insumo/sucursal; cantidades Decimal(14,3) |
-| Compra | Compra→Proveedor/Sucursal; único(proveedorId,numeroDocumento); CompraDetalle→Insumo; cuenta opcional única por compra; Abono→CuentaPorPagar/Usuario |
-| Venta | Venta→Sucursal/Turno/Usuario/Cliente opcional; único(sucursalId,tipo,correlativo); VentaDetalle→Producto; Pago N:1 Venta |
-| Caja | Turno con esperado/contado efectivo,tarjeta,digital; pagos EFECTIVO,TARJETA,BITCOIN,CHIVO_WALLET |
-| Nómina | Empleado.dui único; Planilla→PlanillaDetalle→Empleado; único(planillaId,empleadoId); TramoRenta sin periodo/vigencia modelados |
+```mermaid
+erDiagram
+    SUCURSAL ||--o{ USUARIO : asigna
+    SUCURSAL ||--o{ STOCK_SUCURSAL : mantiene
+    INSUMO ||--o{ STOCK_SUCURSAL : existe_en
+    INSUMO ||--o{ RECETA_ITEM : participa
+    PRODUCTO ||--o{ RECETA_ITEM : requiere
+    SUCURSAL ||--o{ TURNO : registra
+    TURNO ||--o{ VENTA : agrupa
+    VENTA ||--o{ PAGO : recibe
+    VENTA ||--o{ VENTA_DETALLE : contiene
+    PRODUCTO ||--o{ VENTA_DETALLE : se_vende
+    PROVEEDOR ||--o{ COMPRA : emite
+    COMPRA ||--o{ COMPRA_DETALLE : contiene
+    INSUMO ||--o{ COMPRA_DETALLE : se_compra
+    COMPRA ||--o| CUENTA_POR_PAGAR : genera
+    CUENTA_POR_PAGAR ||--o{ ABONO : recibe
+    PLANILLA ||--o{ PLANILLA_DETALLE : contiene
+    EMPLEADO ||--o{ PLANILLA_DETALLE : figura_en
+```
 
-Precios Decimal(10,2), montos Decimal(12,2), costos Decimal(12,4), recetas Decimal(12,3). El esquema no reemplaza validaciones de negocio. Revisar restricciones de cantidades positivas, autorización y concurrencia con el equipo.
+`StockSucursal` identifica cada existencia por el par insumo y sucursal. Los elaborados tienen líneas en `RecetaItem`; la reventa usa un insumo asociado. Los movimientos de inventario guardan su tipo y referencia. Los correlativos de venta distinguen sucursal y tipo de comprobante. `TramoRenta` almacena los rangos, porcentajes, bases y cuotas fijas que consulta el cálculo de nómina.
 
-El seed original solo prepara sucursal y administrador demo; no incluye menú ni tramos ISR. No se modifica ni ejecuta automáticamente. Fixture independiente: backend/prisma/seed-qa.js, exclusivamente origenes_erp_qa local; datos prefijados QA, transacción, sin borrar ni actualizar registros existentes. Repetir no restablece stocks consumidos. Si un dato QA ya existe, se conserva. No usar como prueba de consistencia de datos preexistentes.
+## Seed principal
 
-Migraciones: usar migrate deploy para aplicar las versionadas en base nueva; no migrate reset. Respaldos y recuperación de una base real quedan bajo control del propietario; esta entrega no borra bases ni registros.
+Desde `backend`, `npm run db:seed` ejecuta `prisma/seed.js`. El orden de carga es:
+
+1. **Base:** Casa Matriz, Santa Tecla y San Miguel, con cuatro cuentas de demostración asociadas a Casa Matriz.
+2. **Inventario:** categorías, insumos, stock y ajustes iniciales por sucursal, 15 elaborados con receta y cuatro productos de reventa.
+3. **Clientes:** registros de demostración con datos fiscales para emitir CCF.
+4. **Compras:** proveedores, compras de contado y crédito, cuentas en distintos estados y abonos de ejemplo.
+5. **RR. HH.:** empleados de las tres sucursales, asociaciones con usuarios y tramos quincenales de renta.
+
+Para levantarlo desde cero, sigue la [guía de despliegue](despliegue-local.md).
