@@ -4,7 +4,7 @@ Proyecto de cátedra de Programación Web, ciclo 02 de 2026. Aplicación para op
 
 ## Puesta en marcha
 
-La [guía de despliegue local](docs/despliegue-local.md) prepara PostgreSQL, instala dependencias, aplica migraciones y carga el seed principal. La guía describe la versión integrada de `develop` (`3575d81`).
+La [guía de despliegue local](docs/despliegue-local.md) prepara PostgreSQL, instala dependencias, aplica migraciones y carga el seed principal. La guía describe la versión integrada de `develop` (`5c17615`).
 
 ## Entregables
 

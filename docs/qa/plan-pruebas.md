@@ -12,8 +12,10 @@ Prepara una base desechable con la [guía de despliegue](../despliegue-local.md)
 | INV02 | Comparar existencias antes y después de las dos ventas | Consumo de 36 g de café, 500 ml de leche y dos unidades de cada empaque. |
 | INV03 | Vender un artículo de reventa y consultar la alerta al llegar al mínimo | Se descuenta el insumo asociado y se muestra su alerta. |
 | COM01 | Comprar a crédito 100 g de café | El stock aumenta en 100 g y se crea una cuenta por pagar. |
-| COM02 | Registrar un abono parcial y luego liquidar el saldo | Se actualizan monto y estado después de cada abono. |
-| CAJ01–02 | Cerrar con $27 en efectivo tras las dos ventas | La diferencia de efectivo es cero. Para pagos mixtos, comparar también tarjeta y digital. |
+| COM02 | Registrar un abono parcial y luego liquidar el saldo | Se actualizan monto y estado después de cada abono. Ejecución secuencial pendiente. |
+| CAJ01–02 | Cerrar con $27 en efectivo tras las dos ventas | La diferencia de efectivo es cero. |
+| CAJ04 | Vender con efectivo, tarjeta, Bitcoin y Chivo Wallet y cerrar el turno | Efectivo y tarjeta cuadran por separado. Bitcoin y Chivo Wallet se agrupan en digital. |
+| INV04 | Enviar valores negativos de stock, costo, precio y cantidad de receta | Cada solicitud devuelve HTTP 400. |
 | COM02-C | Enviar dos abonos simultáneos, cada uno por todo el saldo de una cuenta | Un HTTP 201, un HTTP 409 y saldo final cero. |
 | CAJ03 | Repetir diez rondas de cinco aperturas simultáneas del mismo usuario y cerrar entre rondas | Un HTTP 201 y cuatro HTTP 409 por ronda. |
 | NOM01–02 | Generar la quincena, abrir el detalle y comparar un caso con cálculo manual | La planilla incluye empleados del alcance y calcula ISSS, AFP y renta según el tramo. |

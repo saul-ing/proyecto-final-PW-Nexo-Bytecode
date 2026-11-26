@@ -18,7 +18,7 @@ Estas cuentas las crea el seed en Casa Matriz. Úsalas en la instalación local 
 | `admin@origenes.sv` | `Admin123!` | ADMIN | POS, ventas, caja, inventario, compras y RR. HH. |
 | `gerente@origenes.sv` | `Gerente123!` | GERENTE | POS, ventas, caja, inventario, compras y RR. HH. |
 | `cajero@origenes.sv` | `Cajero123!` | CAJERO | POS, ventas y caja. |
-| `barista@origenes.sv` | `Barista123!` | BARISTA | Panel inicial. El catálogo y el cobro requieren un rol habilitado en la API. |
+| `barista@origenes.sv` | `Barista123!` | BARISTA | Solo ve el panel inicial con el resumen del día. |
 
 ## Abrir caja, cobrar y cerrar
 

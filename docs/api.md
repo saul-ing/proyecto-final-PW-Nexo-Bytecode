@@ -1,8 +1,8 @@
 # Contratos HTTP de la API
 
-Referencia: develop, commit 3575d81.
+Referencia: develop, commit 5c17615.
 
-Base: http://127.0.0.1:3000/api. JSON de éxito con ok:true; errores {ok:false,message}. Todas las rutas inventario requieren Authorization: Bearer TOKEN. No guardar el token en documentación/evidencia.
+Base: http://127.0.0.1:3000/api. JSON de éxito con ok:true; errores {ok:false,message}. Todas las rutas de inventario requieren un token Bearer. Cualquier usuario autenticado puede consultar. Crear, editar o desactivar requiere ADMIN o GERENTE. No guardar el token en documentación/evidencia.
 
 | Método | Ruta relativa | Entrada / respuesta |
 |---|---|---|
@@ -119,10 +119,10 @@ Las solicitudes requieren token. El servicio registra y consulta comprobantes en
 
 | Método | Ruta | Datos y resultado |
 |---|---|---|
-| POST | /api/ventas | `{ tipoDocumento, clienteId, items: [{ productoId, cantidad }], pagos: [{ medio, monto }] }`. Devuelve 201 y `{ ok, venta }`. Requiere turno abierto. CCF exige cliente con NIT y NRC. |
+| POST | /api/ventas | `{ tipoDocumento, clienteId, items: [{ productoId, cantidad }], pagos: [{ medio, monto }] }`. Devuelve 201 y `{ ok, venta }`. Requiere ADMIN, GERENTE o CAJERO, un turno abierto y cantidades enteras. CCF exige cliente con NIT y NRC. |
 | GET | /api/ventas | Filtros opcionales `turnoId` y `fecha` (YYYY-MM-DD). Devuelve `{ ok, ventas }`. |
 | GET | /api/ventas/:id | Devuelve `{ ok, venta }`. |
-| PATCH | /api/ventas/:id/anular | Anula la venta y reintegra existencias mediante movimientos de inventario. Devuelve `{ ok, message, venta }`. |
+| PATCH | /api/ventas/:id/anular | Requiere ADMIN, GERENTE o CAJERO. Anula la venta y reintegra existencias mediante movimientos de ajuste en el kárdex. Devuelve `{ ok, message, venta }`. |
 
 El precio de catálogo incluye IVA. Por línea, el subtotal se calcula dividiendo el total entre 1.13. El IVA es la diferencia entre el total y la base redondeada. Los correlativos se asignan por sucursal y tipo de documento.
 

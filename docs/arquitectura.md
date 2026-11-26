@@ -1,6 +1,6 @@
 # Arquitectura
 
-Referencia de implementación: `develop`, commit `3575d81`.
+Referencia de implementación: `develop`, commit `5c17615`.
 
 ```mermaid
 flowchart LR

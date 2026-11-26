@@ -1,6 +1,6 @@
 # Despliegue local en Windows
 
-Guía para el código integrado de `develop` en `3575d81`. Se requieren Node.js, npm y una instancia local de PostgreSQL 18, que fue la versión usada para la verificación. Ejecuta estos comandos desde la raíz de un clon de la aplicación.
+Guía para el código integrado de `develop` en `5c17615`. Se requieren Node.js, npm y una instancia local de PostgreSQL (verificado con la versión 18). Ejecuta estos comandos desde la raíz de un clon de la aplicación.
 
 1. Enciende PostgreSQL y crea una base nueva llamada `origenes_erp` con un usuario que pueda crear y modificar tablas. Usa una base desechable para la demostración.
 2. Instala dependencias y prepara los archivos de entorno.

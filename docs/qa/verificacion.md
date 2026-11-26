@@ -6,15 +6,18 @@ Fecha: 25 de noviembre de 2026. Versión: `develop`, commit `5c17615`. Entorno: 
 |---|---|---|
 | DEP01 | Migración y seed | Se aplicó `20261113032006_init` y el seed finalizó. La aplicación inició con sus datos. |
 | API01 | Salud y autenticación | Salud HTTP 200 y sucursales sin sesión HTTP 401. Las cuatro cuentas del seed iniciaron sesión. POS aceptó ADMIN, GERENTE y CAJERO y devolvió 403 a BARISTA. RR. HH. aceptó ADMIN y GERENTE y devolvió 403 a CAJERO y BARISTA. |
-| SUC01 | Consulta de sucursales | Tres sucursales devueltas con sesión. |
+| SUC01 | Aislamiento entre sucursales | Se consultaron las tres sucursales. Se agregó una cuenta temporal para Santa Tecla. La venta de agua en Casa Matriz dejó el stock de Santa Tecla en 100 y consultar el comprobante desde esa sede devolvió HTTP 404. |
 | INV01 | Catálogo POS | 19 productos consultados. Latte Grande visible en el catálogo. |
 | VEN01–02 | Venta CF y CCF | Se registraron y consultaron ambos comprobantes. Cada uno totalizó $3.50, con base $3.10 e IVA $0.40. Para CCF se seleccionó un cliente del seed. |
 | INV02 | Descuento por receta | Dos bebidas descontaron 36 g de café, 500 ml de leche y dos vasos, dos tapaderas y dos viñetas. |
 | COM01 | Compra a crédito | Compra registrada, aumento de 100 g de café y cuenta por pagar consultada. |
 | CAJ01–02 | Apertura y cierre | Fondo de $20 y dos ventas en efectivo por $7. Cierre con $27 y diferencias cero. |
 | NOM01–02 | Planilla | Generación desde el formulario y consulta de ocho detalles para el período del 1 al 15 de noviembre de 2026. Para $950 mensuales, se comprobó bruto de $475.00, ISSS $14.25, AFP $34.44, renta $23.96 y neto $402.35. |
-| COM02 | Abonos simultáneos | Dos solicitudes por el saldo completo de la misma cuenta. Una devolvió 201 y la otra 409. La cuenta quedó PAGADA con saldo cero. |
+| COM02-C | Abonos simultáneos | Dos solicitudes por el saldo completo de la misma cuenta. Una devolvió 201 y la otra 409. La cuenta quedó PAGADA con saldo cero. |
 | CAJ03 | Aperturas simultáneas | Diez rondas de cinco solicitudes para el mismo usuario. Cada ronda produjo un 201 y cuatro 409. Se cerró el único turno de cada ronda. |
+| INV03 | Reventa y mínimo | Se fijó el mínimo del agua en 99 en Casa Matriz. La venta redujo el stock de 100 a 99 y apareció la alerta en esa sede. |
+| INV04 | Valores negativos | Stock, costo, precio y cantidad de receta negativos devolvieron HTTP 400. |
+| CAJ04 | Cierre con pagos mixtos | Venta de $1.00, repartida en cuatro pagos de $0.25. Con fondo de $20.00, el cierre esperaba $20.25 en efectivo, $0.25 en tarjeta y $0.50 en digital (Bitcoin y Chivo Wallet). Las tres diferencias fueron cero. |
 | UI01 | Pantallas en ejecución | Se capturaron inicio de sesión, POS, inventario, cuentas por pagar y planillas. |
 | TEC01 | Lint y compilación | ESLint y build de producción de `develop` pasaron en la revisión del 25 de noviembre. |
 
