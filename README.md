@@ -1,26 +1,20 @@
 # Orígenes SV · ERP y POS
 
-Proyecto de Cátedra · Programación Web · Ciclo 02, 2026.
-Stack: React + Vite + Tailwind · Node + Express · PostgreSQL + Prisma
+Proyecto de cátedra de Programación Web, ciclo 02 de 2026. Aplicación para operar varias sucursales con React, Vite, Tailwind, Express, Prisma y PostgreSQL.
 
 ## Puesta en marcha
 
-    git clone <url-del-repo>
-    cd origenes-sv-erp
-    git checkout develop
-    npm run install:all
-    cp backend/.env.example backend/.env
-    cp frontend/.env.example frontend/.env
-    npm run db:migrate
-    npm run db:seed
-    npm run dev:backend
-    npm run dev:frontend
+La [guía de despliegue local](docs/despliegue-local.md) prepara PostgreSQL, instala dependencias, aplica migraciones y carga el seed principal. La guía describe la versión integrada de `develop` (`3575d81`).
 
-Antes de migrar: crear la base `origenes_erp` en PostgreSQL y poner tu contraseña en backend/.env.
+## Entregables
 
-## Git Flow
+1. [Investigación IEEE (PDF)](docs/ieee/informe.pdf) y [fuente LaTeX](docs/ieee/informe.tex). [Confirmación individual de uso de IA](docs/ieee/uso-ia.md).
+2. [Excel de actividades de los ocho integrantes](docs/qa/seguimiento.xlsx).
+3. [Manual de usuario](docs/manual-usuario.md).
+4. Documentación técnica de [arquitectura](docs/arquitectura.md), [API](docs/api.md), [base de datos](docs/db.md) y [despliegue](docs/despliegue-local.md).
 
-- main: estable. develop: integración.
-- feature/nombre-del-modulo: una por persona, sale de develop y vuelve por Pull Request.
-- Nadie hace push directo a main ni a develop.
-- Commits con prefijo: feat:, fix:, docs:, refactor:, chore:
+El [registro de verificación](docs/qa/verificacion.md) y el [plan de pruebas](docs/qa/plan-pruebas.md) respaldan la documentación técnica.
+
+## Colaboración
+
+`main` es la rama estable y `develop` recibe las integraciones. El equipo trabaja por módulo en ramas de trabajo y usa pull requests para integrar cambios. Las variables de entorno locales quedan fuera del repositorio.
