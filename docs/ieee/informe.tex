@@ -133,6 +133,10 @@ El equipo declara OpenAI Codex y Anthropic Claude en la bibliografía. Codex apo
 
 Anthropic Claude apoyó a J. Angel en el módulo de compras y proveedores, tanto en el backend como en el frontend. El apoyo abarcó el registro de compras con entrada de inventario y cuentas por pagar, abonos y estado de cuenta, además del seed de demostración, la consulta de sucursales y el manejo de errores de validación. También apoyó la integración del nuevo inicio de sesión, las imágenes del catálogo POS, el cliente HTTP compartido, el selector de sucursal en empleados, correcciones de lint y rutas, el borrador del README y la revisión del repositorio y de los entregables \cite{claude}. Las funciones \texttt{registrarCompra} y \texttt{registrarAbono} están marcadas en el código fuente. Johann confirmó que revisó los cambios de código y que se integraron por pull request.
 
+A. Vega desarrolló Inventario y Recetas. Definió los requisitos y los contratos con Ventas, Compras y POS, revisó los cambios y los integró por pull request. Claude Code apoyó los formularios controlados y el estado inmutable, la carga en paralelo, el editor dinámico de recetas, el renderizado condicional, las alertas, React Router, Axios y la migración a Tailwind. En el backend asistió en el descuento atómico con \texttt{updateMany} y \texttt{gte}, las transacciones de Prisma, \texttt{upsert}, \texttt{connectOrCreate}, \texttt{disconnect} y la adaptación al stock por sucursal y al kárdex \cite{claude}.
+
+El material recibido documenta apoyo de Claude en Caja para las rutas, la autenticación y los roles, la transacción de cierre y el manejo de estado, montos y fechas. En POS documenta apoyo de Claude Code en el catálogo, la disponibilidad por receta, la búsqueda de clientes para CCF, el carrito, los pagos mixtos y el vuelto, Axios y el diseño con Tailwind. Está pendiente confirmar la autoría de estas dos declaraciones \cite{claude}.
+
 \IEEEtriggeratref{2}
 \begin{thebibliography}{9}
 \bibitem{enunciado}
@@ -150,6 +154,6 @@ R. Fielding, M. Nottingham y J. Reschke, “HTTP Semantics,” RFC 9110, jun. 20
 \bibitem{codex}
 OpenAI, Codex, asistente de IA. Uso en el proyecto: apoyo en documentación, QA y configuración local, nov. 2026.
 \bibitem{claude}
-Anthropic, Claude (Claude Code), asistente de IA. Uso en el proyecto: módulo de compras y proveedores, datos de demostración, consulta de sucursales, manejo de errores, inicio de sesión, imágenes del POS, cliente HTTP compartido, correcciones y revisión de entregables, nov. 2026.
+Anthropic, Claude (Claude Code), asistente de IA. Uso en el proyecto: módulo de compras y proveedores, datos de demostración, consulta de sucursales, manejo de errores, inicio de sesión, imágenes del POS, cliente HTTP compartido, correcciones, Inventario y Recetas, Caja y Turnos, POS y revisión de entregables, nov. 2026.
 \end{thebibliography}
 \end{document}

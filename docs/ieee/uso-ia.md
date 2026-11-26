@@ -5,10 +5,12 @@ El [informe IEEE](informe.pdf) incluye en la bibliografía los usos de Codex y C
 | Integrante | Confirmación individual |
 |---|---|
 | Amy Ariadna Barraza Villacorta | Pendiente |
-| Andrés Eduardo Vega Mena | Pendiente |
+| Andrés Eduardo Vega Mena | Declaración recibida. Claude Code en Inventario y Recetas: formularios, carga, editor, navegación, Axios y Tailwind, además de transacciones, descuento atómico de stock y kárdex. |
 | Johann André Angel Menjívar | Confirmado. Anthropic Claude (Claude Code). Compras y proveedores (backend y frontend), seed, sucursales, manejo de errores HTTP 400, login, correcciones de lint y rutas, selector de sucursal, fotos del POS, Axios compartido, README y revisión de develop y los entregables. |
 | Rodrigo Josué Medrano Márquez | Pendiente |
 | Magaly Brendalí Aguilar Granillo | Pendiente |
 | Alfredo Antonio Guarita Hernández | Pendiente |
 | Daniel Alexander Avelar Orellana | Pendiente |
 | Saul Ernesto Giron Vigil | Pendiente |
+
+Se recibió material de Caja (capturas) y POS (archivo adjunto). Sus usos se registraron por módulo. La confirmación individual sigue pendiente.
