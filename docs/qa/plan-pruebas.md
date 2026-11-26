@@ -14,8 +14,10 @@ Prepara una base desechable con la [guía de despliegue](../despliegue-local.md)
 | COM01 | Comprar a crédito 100 g de café | El stock aumenta en 100 g y se crea una cuenta por pagar. |
 | COM02 | Registrar un abono parcial y luego liquidar el saldo | Se actualizan monto y estado después de cada abono. |
 | CAJ01–02 | Cerrar con $27 en efectivo tras las dos ventas | La diferencia de efectivo es cero. Para pagos mixtos, comparar también tarjeta y digital. |
+| COM02-C | Enviar dos abonos simultáneos, cada uno por todo el saldo de una cuenta | Un HTTP 201, un HTTP 409 y saldo final cero. |
+| CAJ03 | Repetir diez rondas de cinco aperturas simultáneas del mismo usuario y cerrar entre rondas | Un HTTP 201 y cuatro HTTP 409 por ronda. |
 | NOM01–02 | Generar la quincena, abrir el detalle y comparar un caso con cálculo manual | La planilla incluye empleados del alcance y calcula ISSS, AFP y renta según el tramo. |
 | UI01 | Recorrer acceso, POS, inventario, compras y planillas desde el navegador | Se muestran las pantallas y los datos del seed. |
 | TEC01 | Ejecutar lint y build del frontend | Ambos comandos finalizan con código cero. |
 
-Los resultados de la ejecución del 24 de noviembre están en [verificación](verificacion.md).
+Los resultados de la ejecución del 25 de noviembre están en [verificación](verificacion.md).

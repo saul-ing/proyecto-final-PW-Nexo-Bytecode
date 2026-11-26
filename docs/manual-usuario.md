@@ -1,6 +1,6 @@
 # Manual de usuario
 
-Esta guía muestra la versión integrada de `develop` (`3575d81`). Las capturas se tomaron en Chrome sobre una base de demostración cargada con el seed principal.
+Esta guía muestra la versión integrada de `develop` (`5c17615`). Las capturas se tomaron en Chrome sobre una base de demostración cargada con el seed principal.
 
 ## Iniciar sesión
 

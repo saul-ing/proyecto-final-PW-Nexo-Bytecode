@@ -1,6 +1,6 @@
 # Verificación de la versión integrada
 
-Fecha: 24 de noviembre de 2026. Versión: `develop`, commit `3575d81`. Entorno: Windows, Node 24.21.0, Prisma 6.19.3, PostgreSQL 18 y Chrome. Se usó una copia temporal, una base nueva en loopback y el seed principal del proyecto.
+Fecha: 25 de noviembre de 2026. Versión: `develop`, commit `5c17615`. Entorno: Windows, Node 24.21.0, Prisma 6.19.3, PostgreSQL 18 y Chrome. Se usó una copia temporal, una base nueva en loopback y el seed principal del proyecto.
 
 | ID | Verificación | Evidencia |
 |---|---|---|
@@ -13,10 +13,12 @@ Fecha: 24 de noviembre de 2026. Versión: `develop`, commit `3575d81`. Entorno: 
 | COM01 | Compra a crédito | Compra registrada, aumento de 100 g de café y cuenta por pagar consultada. |
 | CAJ01–02 | Apertura y cierre | Fondo de $20 y dos ventas en efectivo por $7. Cierre con $27 y diferencias cero. |
 | NOM01–02 | Planilla | Generación desde el formulario y consulta de ocho detalles para el período del 1 al 15 de noviembre de 2026. Para $950 mensuales, se comprobó bruto de $475.00, ISSS $14.25, AFP $34.44, renta $23.96 y neto $402.35. |
+| COM02 | Abonos simultáneos | Dos solicitudes por el saldo completo de la misma cuenta. Una devolvió 201 y la otra 409. La cuenta quedó PAGADA con saldo cero. |
+| CAJ03 | Aperturas simultáneas | Diez rondas de cinco solicitudes para el mismo usuario. Cada ronda produjo un 201 y cuatro 409. Se cerró el único turno de cada ronda. |
 | UI01 | Pantallas en ejecución | Se capturaron inicio de sesión, POS, inventario, cuentas por pagar y planillas. |
-| TEC01 | Lint y compilación | ESLint y build de producción de `develop` pasaron en la revisión del 24 de noviembre. |
+| TEC01 | Lint y compilación | ESLint y build de producción de `develop` pasaron en la revisión del 25 de noviembre. |
 
-La planilla se generó en Chrome, con zona horaria America/Guatemala. El formulario envió las fechas a las 12:00 y el listado mostró del 1 al 15 de noviembre. Las ventas, la compra y el cierre se comprobaron por HTTP sobre PostgreSQL. La captura de cuentas por pagar se tomó antes de registrar la compra de verificación. Para repetir la revisión, sigue la [guía de despliegue](../despliegue-local.md) y el [plan de pruebas](plan-pruebas.md).
+La planilla se generó en Chrome, con zona horaria de El Salvador (UTC−6). El formulario envió las fechas a las 12:00 y el listado mostró del 1 al 15 de noviembre. Las ventas, la compra y el cierre se comprobaron por HTTP sobre PostgreSQL. La captura de cuentas por pagar se tomó antes de registrar la compra de verificación. Para repetir la revisión, sigue la [guía de despliegue](../despliegue-local.md) y el [plan de pruebas](plan-pruebas.md).
 
 ## Evidencia de aportes de QA
 

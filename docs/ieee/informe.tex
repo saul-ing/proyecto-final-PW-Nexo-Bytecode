@@ -3,6 +3,9 @@
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{url}
+\makeatletter
+\newcommand{\numero}{n.\hbox{\font\ordinalfont=ptmr8r at \f@size pt\ordinalfont\char186}}
+\makeatother
 \renewcommand{\abstractname}{Resumen}
 \renewcommand{\IEEEkeywordsname}{Palabras clave}
 \renewcommand{\refname}{Referencias}
@@ -86,7 +89,7 @@ El servicio aplica el IVA del 13\,\% en CF y CCF \cite{enunciado}. Para una lín
 El registro de una compra a crédito suma las cantidades de inventario de su sucursal y deja una cuenta por pagar. Los abonos reducen el saldo y modifican el estado. El cierre de turno compara lo esperado con lo contado en efectivo, tarjeta y digital. El efectivo esperado incorpora el fondo inicial y los pagos en efectivo de ventas emitidas del turno. Los pagos con Bitcoin y Chivo Wallet forman el total digital del cuadre.
 
 \subsection{Planilla y retención de renta}
-El cálculo parte del salario mensual dividido entre dos. La implementación descuenta ISSS del 3\,\% con un tope de base quincenal de \$500 y AFP del 7.25\,\% sobre el bruto. La base de renta es el bruto menos ambas cotizaciones. Se selecciona el tramo cargado en \texttt{TramoRenta} y se suma su cuota fija al porcentaje sobre el exceso. El Decreto Ejecutivo n.\textsuperscript{o} 10 documenta las tablas de retención \cite{renta}; los valores del seed se usan en el cálculo de la demostración.
+El cálculo parte del salario mensual dividido entre dos. La implementación descuenta ISSS del 3\,\% con un tope de base quincenal de \$500 y AFP del 7.25\,\% sobre el bruto. La base de renta es el bruto menos ambas cotizaciones. Se selecciona el tramo cargado en \texttt{TramoRenta} y se suma su cuota fija al porcentaje sobre el exceso. El Decreto Ejecutivo \numero{} 10 documenta las tablas de retención \cite{renta}; los valores del seed se usan en el cálculo de la demostración.
 
 Por ejemplo, con \$950 mensuales, el bruto quincenal es \$475.00, ISSS es \$14.25 y AFP es \$34.44. La base de renta es \$426.31. El segundo tramo aporta \$8.83 más el 10\,\% del exceso sobre \$275.00, para una retención redondeada de \$23.96 y un neto de \$402.35.
 
@@ -101,7 +104,7 @@ Por ejemplo, con \$950 mensuales, el bruto quincenal es \$475.00, ISSS es \$14.2
 El repositorio usa ramas por módulo y pull requests para integrar en \texttt{develop}. Amy Ariadna Barraza Villacorta trabajó en caja. Andrés Eduardo Vega Mena implementó inventario y recetas. Johann André Angel Menjívar trabajó en compras y datos de demostración. Rodrigo Josué Medrano Márquez desarrolló el POS y elementos comunes de interfaz. Magaly Brendalí Aguilar Granillo trabajó en ventas y comprobantes. Alfredo Antonio Guarita Hernández trabajó en empleados, planilla e integración de pantallas. Daniel Alexander Avelar Orellana preparó QA, documentación y despliegue. Saul Ernesto Giron Vigil trabajó en el esquema inicial, autenticación, frontend base y sucursales. El Excel relaciona actividades, fechas y commits de cada integrante.
 
 \section{Verificación de la implementación}
-Se ejecutó la versión integrada \texttt{3575d81} en una copia temporal. Se aplicó la migración versionada a PostgreSQL 18 y se ejecutó el seed principal. La verificación combinó operaciones HTTP con capturas del frontend en ejecución. Las cuatro cuentas iniciaron sesión. Se contrastaron los permisos del POS y de RR. HH. por rol y la devolución de HTTP 401 sin sesión en una ruta protegida, coherente con el uso de ese código para solicitudes sin credenciales válidas \cite{http}.
+Se ejecutó la versión integrada \texttt{5c17615} en una copia temporal. Se aplicó la migración versionada a PostgreSQL 18 y se ejecutó el seed principal. La verificación combinó operaciones HTTP con capturas del frontend en ejecución. Las cuatro cuentas iniciaron sesión. Se contrastaron los permisos del POS y de RR. HH. por rol y la devolución de HTTP 401 sin sesión en una ruta protegida, coherente con el uso de ese código para solicitudes sin credenciales válidas \cite{http}.
 
 \begin{table}[!t]
 \caption{Resultados sobre la base de demostración}
@@ -123,13 +126,13 @@ Planilla & Generación y consulta de ocho detalles del período del 1 al 15 de n
 \end{tabular}
 \end{table}
 
-Se consultó el comprobante después de cada venta y se comparó el stock anterior y posterior. El detalle de planilla confirmó las deducciones del ejemplo de \$950 mensuales. La planilla se generó desde el formulario. La interfaz envió el inicio y el fin a mediodía y mostró del 1 al 15 de noviembre en la zona horaria de Guatemala (Fig.~\ref{fig:planillas}). Las pruebas cubrieron la base de demostración. La concurrencia y la carga de producción quedan fuera del alcance de esta ejecución.
+Se consultó el comprobante después de cada venta y se comparó el stock anterior y posterior. El detalle de planilla confirmó las deducciones del ejemplo de \$950 mensuales. La planilla se generó desde el formulario. La interfaz envió el inicio y el fin a mediodía y mostró del 1 al 15 de noviembre en la zona horaria de El Salvador (UTC\textendash6) (Fig.~\ref{fig:planillas}). En concurrencia, se enviaron dos abonos simultáneos, cada uno por el saldo completo de la misma cuenta. Uno devolvió HTTP 201 y el otro HTTP 409. La cuenta quedó pagada con saldo cero. También se ejecutaron diez rondas de cinco solicitudes simultáneas de apertura para el mismo usuario. En cada ronda se creó un turno (HTTP 201), las cuatro solicitudes restantes devolvieron HTTP 409 y se cerró el turno antes de iniciar la siguiente ronda. Estas pruebas cubrieron los dos casos sobre la base de demostración. La carga de producción queda fuera de su alcance.
 
 \section{Conclusiones}
 El sistema vinculó operaciones de venta, inventario y caja en la base de demostración. El Latte Grande permitió contrastar receta, cálculo de IVA, movimientos de existencias y cuadre con una operación concreta. La compra a crédito y la planilla confirmaron que el mismo entorno soporta los flujos administrativos evaluados. La migración versionada y el seed principal permiten repetir la demostración con otra base local.
 
 \section*{Uso de inteligencia artificial}
-El equipo declara OpenAI Codex y Anthropic Claude en la bibliografía. Daniel Avelar usó Codex para QA con PostgreSQL, capturas, despliegue local, seguimiento de actividades y preparación de la documentación y del informe IEEE \cite{codex}.
+El equipo declara OpenAI Codex, Anthropic Claude y Google Gemini en la bibliografía. Daniel Avelar usó Codex para QA con PostgreSQL, capturas, despliegue local, seguimiento de actividades y preparación de la documentación y del informe IEEE \cite{codex}.
 
 Anthropic Claude apoyó a J. Angel en el módulo de compras y proveedores, tanto en el backend como en el frontend. El apoyo abarcó el registro de compras con entrada de inventario y cuentas por pagar, abonos y estado de cuenta, además del seed de demostración, la consulta de sucursales y el manejo de errores de validación. También apoyó la integración del nuevo inicio de sesión, las imágenes del catálogo POS, el cliente HTTP compartido, el selector de sucursal en empleados, correcciones de lint y rutas, el borrador del README y la revisión del repositorio y de los entregables \cite{claude}. Las funciones \texttt{registrarCompra} y \texttt{registrarAbono} están marcadas en el código fuente. Johann confirmó que revisó los cambios de código y que se integraron por pull request.
 
@@ -137,7 +140,13 @@ A. Vega desarrolló Inventario y Recetas. Definió los requisitos y los contrato
 
 Amy Ariadna Barraza Villacorta usó Claude en Caja para las rutas, la autenticación y los roles, la transacción de cierre y el manejo de estado, montos y fechas. Rodrigo Medrano usó Claude Code en POS para el catálogo, la disponibilidad por receta, la búsqueda de clientes para CCF, el carrito, los pagos mixtos y el vuelto, Axios y el diseño con Tailwind. \cite{claude}.
 
-\IEEEtriggeratref{2}
+Magaly Aguilar usó Gemini en Ventas para validar el turno abierto, consultar productos con sus recetas en una sola consulta, generar correlativos por sucursal y tipo de documento, incluir el descuento de existencias en la transacción de venta y listar facturas con filtros y fechas de El Salvador \cite{gemini}.
+
+Alfredo Guarita usó Claude en RR. HH. para delimitar el acceso por rol y sucursal, calcular la retención por tramo y las aportaciones patronales sin descontarlas al empleado, generar planillas quincenales por período y sucursal, y evitar planillas duplicadas \cite{claude}.
+
+El equipo también utilizó Claude para el panel «Sobre nosotros» del inicio de sesión (PR~\#22) y para las correcciones de los PR~\#26, \#27 y \#28. El apoyo abarcó la doble apertura de turno, validaciones y permisos de ventas e inventario, planillas y empleados, el inicio de sesión, el catálogo POS y clientes, y la consulta de turnos desde el panel inicial \cite{claude}.
+
+
 \begin{thebibliography}{9}
 \bibitem{enunciado}
 “Proyecto de Cátedra, Programación Web, Ciclo 02, 2026,” enunciado académico, 2026, pp. 1--5.
@@ -148,12 +157,14 @@ PostgreSQL Global Development Group, “Transactions,” PostgreSQL 18 Documenta
 \bibitem{prisma}
 Prisma, “Transactions and batch queries,” Prisma ORM v6 Documentation. \url{https://www.prisma.io/docs/orm/v6/prisma-client/queries/transactions}
 \bibitem{renta}
-Órgano Ejecutivo de El Salvador, “Decreto Ejecutivo n.\textsuperscript{o} 10. Tablas de Retención del Impuesto sobre la Renta,” Diario Oficial, tomo 447, 30 abr. 2025. \url{https://www.diariooficial.gob.sv/seleccion/31505}
+Órgano Ejecutivo de El Salvador, “Decreto Ejecutivo \numero{} 10. Tablas de Retención del Impuesto sobre la Renta,” Diario Oficial, tomo 447, 30 abr. 2025. \url{https://www.diariooficial.gob.sv/seleccion/31505}
 \bibitem{http}
 R. Fielding, M. Nottingham y J. Reschke, “HTTP Semantics,” RFC 9110, jun. 2022. \url{https://www.rfc-editor.org/info/rfc9110/}
 \bibitem{codex}
 OpenAI, Codex, asistente de IA. Uso en el proyecto: apoyo a Daniel Avelar en QA con PostgreSQL, capturas, despliegue local, seguimiento y documentación IEEE, nov. 2026.
 \bibitem{claude}
-Anthropic, Claude y Claude Code, asistentes de IA. Uso en el proyecto: módulo de compras y proveedores, datos de demostración, consulta de sucursales, manejo de errores, inicio de sesión, imágenes del POS, cliente HTTP compartido, correcciones, Inventario y Recetas, Caja y Turnos, POS y revisión de entregables, nov. 2026.
+Anthropic, Claude y Claude Code, asistentes de IA. Uso en el proyecto: módulo de compras y proveedores, datos de demostración, consulta de sucursales, manejo de errores, inicio de sesión, imágenes del POS, cliente HTTP compartido, correcciones, inventario y recetas, caja y turnos, POS, RR. HH., panel «Sobre nosotros», PR~\#26--\#28 y revisión de entregables, nov. 2026.
+\bibitem{gemini}
+Google, Gemini, asistente de IA. Uso en el proyecto: apoyo a Magaly Aguilar en validación de turnos, consultas, correlativos, transacciones de venta y listado de facturas, nov. 2026.
 \end{thebibliography}
 \end{document}
