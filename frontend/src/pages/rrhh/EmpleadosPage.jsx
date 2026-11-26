@@ -1,5 +1,13 @@
-import { useEffect, useState } from 'react';
-import { getEmpleados, crearEmpleado, editarEmpleado, desactivarEmpleado } from '../../api/rrhhApi';
+import { useCallback, useEffect, useState } from 'react';
+import { getEmpleados, crearEmpleado, editarEmpleado, desactivarEmpleado, getSucursales } from '../../api/rrhhApi';
+import { useAuth } from '../../context/AuthContext';
+
+import Icono from '../../components/Icono';
+import { Alerta, Campo, Encabezado, FilaVacia, Insignia } from '../../components/ui';
+import {
+  botonClase, botonGris, botonRojo, contenedorTabla, filaClase, inputClase,
+  tablaClase, tarjetaClase, tdClase, theadClase, thClase,
+} from '../../components/estilos';
 
 const dinero = (n) => `$${Number(n ?? 0).toFixed(2)}`;
 const CARGOS = ['Barista', 'Cajero', 'Gerente'];
@@ -9,13 +17,10 @@ const EMPLEADO_VACIO = {
   cargo: 'Barista', salarioMensual: '', fechaIngreso: '', sucursalId: '',
 };
 
-const inputClase =
-  'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
-const botonClase =
-  'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-50';
-
 function EmpleadosPage() {
+  const { usuario } = useAuth();
   const [empleados, setEmpleados] = useState([]);
+  const [sucursales, setSucursales] = useState([]);
   const [form, setForm] = useState(EMPLEADO_VACIO);
   const [editandoId, setEditandoId] = useState(null);
   const [soloActivos, setSoloActivos] = useState(true);
@@ -23,14 +28,25 @@ function EmpleadosPage() {
   const [mensaje, setMensaje] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-const cargar = () =>
-  getEmpleados(soloActivos ? { activo: true } : {})
-    .then((lista) => setEmpleados(Array.isArray(lista) ? lista : []))
-    .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los empleados'));
+  // useCallback para que el efecto se vuelva a correr solo cuando cambia el filtro
+  const cargar = useCallback(
+    () =>
+      getEmpleados(soloActivos ? { activo: true } : {})
+        .then((lista) => setEmpleados(Array.isArray(lista) ? lista : []))
+        .catch((err) => setError(err.response?.data?.message || 'No se pudieron cargar los empleados')),
+    [soloActivos],
+  );
 
   useEffect(() => {
     cargar();
-  }, [soloActivos]);
+  }, [cargar]);
+
+  // Sucursales para el selector del formulario
+  useEffect(() => {
+    getSucursales()
+      .then((lista) => setSucursales(Array.isArray(lista) ? lista : []))
+      .catch(() => setError('No se pudieron cargar las sucursales'));
+  }, []);
 
   const cambiar = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -103,112 +119,111 @@ const cargar = () =>
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Empleados</h1>
+    <div>
+      <Encabezado icono="badge" titulo="Empleados" descripcion={usuario?.rol === 'ADMIN' ? 'Baristas, cajeros y gerentes de todas las sucursales' : 'Baristas, cajeros y gerentes de tu sucursal'} />
 
-      {error && <div className="mb-4 rounded bg-red-100 p-3 text-red-800">{error}</div>}
-      {mensaje && <div className="mb-4 rounded bg-green-100 p-3 text-green-800">{mensaje}</div>}
+      {error && <Alerta tipo="error" onCerrar={() => setError('')}>{error}</Alerta>}
+      {mensaje && <Alerta tipo="ok" onCerrar={() => setMensaje('')}>{mensaje}</Alerta>}
 
-      <form onSubmit={guardar} className="mb-6 space-y-4 rounded border border-gray-200 p-4">
-        <h2 className="text-lg font-semibold">{editandoId ? 'Editar empleado' : 'Registrar empleado'}</h2>
+      <form onSubmit={guardar} className={`${tarjetaClase} mb-6 space-y-4`}>
+        <h3 className="font-semibold text-origen-950">{editandoId ? 'Editar empleado' : 'Registrar empleado'}</h3>
 
         <div className="grid gap-3 md:grid-cols-3">
-          <label className="block">
-            <span className="text-sm text-gray-600">Nombre completo *</span>
+          <Campo etiqueta="Nombre completo *">
             <input name="nombre" value={form.nombre} onChange={cambiar} required className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">DUI *</span>
+          </Campo>
+          <Campo etiqueta="DUI *">
             <input name="dui" value={form.dui} onChange={cambiar} required placeholder="00000000-0" className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">NIT</span>
+          </Campo>
+          <Campo etiqueta="NIT">
             <input name="nit" value={form.nit} onChange={cambiar} className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">N.º ISSS</span>
+          </Campo>
+          <Campo etiqueta="N.º ISSS">
             <input name="numeroIsss" value={form.numeroIsss} onChange={cambiar} className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">N.º AFP</span>
+          </Campo>
+          <Campo etiqueta="N.º AFP">
             <input name="numeroAfp" value={form.numeroAfp} onChange={cambiar} className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">Cargo *</span>
+          </Campo>
+          <Campo etiqueta="Cargo *">
             <select name="cargo" value={form.cargo} onChange={cambiar} className={inputClase}>
               {CARGOS.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">Salario mensual *</span>
+          </Campo>
+          <Campo etiqueta="Salario mensual *">
             <input name="salarioMensual" type="number" min="0.01" step="0.01" value={form.salarioMensual} onChange={cambiar} required className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">Fecha de ingreso *</span>
+          </Campo>
+          <Campo etiqueta="Fecha de ingreso *">
             <input name="fechaIngreso" type="date" value={form.fechaIngreso} onChange={cambiar} required className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">ID de sucursal *</span>
-            <input name="sucursalId" type="number" min="1" value={form.sucursalId} onChange={cambiar} required className={inputClase} />
-          </label>
+          </Campo>
+          <Campo etiqueta="Sucursal *">
+            <select name="sucursalId" value={form.sucursalId} onChange={cambiar} required className={inputClase}>
+              <option value="" disabled>Selecciona una sucursal</option>
+              {sucursales.map((s) => (
+                <option key={s.id} value={String(s.id)}>{s.nombre}</option>
+              ))}
+            </select>
+          </Campo>
         </div>
 
         <div className="flex gap-2">
           <button type="submit" disabled={enviando} className={botonClase}>
+            <Icono nombre={editandoId ? 'save' : 'person_add'} tamano={20} />
             {enviando ? 'Guardando...' : editandoId ? 'Guardar cambios' : 'Registrar empleado'}
           </button>
           {editandoId && (
-            <button type="button" onClick={cancelar} className="rounded border border-gray-300 px-4 py-2 hover:bg-gray-100">
+            <button type="button" onClick={cancelar} className={`${botonGris} px-4 py-2`}>
               Cancelar
             </button>
           )}
         </div>
       </form>
 
-      <label className="mb-3 flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={soloActivos} onChange={(e) => setSoloActivos(e.target.checked)} />
+      <label className="mb-3 flex items-center gap-2 text-sm text-origen-700">
+        <input type="checkbox" checked={soloActivos} onChange={(e) => setSoloActivos(e.target.checked)} className="h-4 w-4 accent-origen-700" />
         Mostrar solo empleados activos
       </label>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead className="bg-gray-100">
+      <div className={contenedorTabla}>
+        <table className={tablaClase}>
+          <thead className={theadClase}>
             <tr>
-              <th className="p-2">Nombre</th>
-              <th className="p-2">DUI</th>
-              <th className="p-2">Cargo</th>
-              <th className="p-2">Sucursal</th>
-              <th className="p-2 text-right">Salario mensual</th>
-              <th className="p-2">Estado</th>
-              <th className="p-2"></th>
+              <th className={thClase}>Nombre</th>
+              <th className={thClase}>DUI</th>
+              <th className={thClase}>Cargo</th>
+              <th className={thClase}>Sucursal</th>
+              <th className={`${thClase} text-right`}>Salario mensual</th>
+              <th className={thClase}>Estado</th>
+              <th className={thClase}></th>
             </tr>
           </thead>
           <tbody>
             {empleados.map((emp) => (
-              <tr key={emp.id} className="border-b border-gray-200">
-                <td className="p-2">{emp.nombre}</td>
-                <td className="p-2">{emp.dui}</td>
-                <td className="p-2">{emp.cargo}</td>
-                <td className="p-2">{emp.sucursal?.nombre ?? emp.sucursalId}</td>
-                <td className="p-2 text-right">{dinero(emp.salarioMensual)}</td>
-                <td className="p-2">{emp.activo ? 'Activo' : 'Inactivo'}</td>
-                <td className="space-x-2 p-2 text-right">
-                  <button onClick={() => editar(emp)} className="rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">
+              <tr key={emp.id} className={filaClase}>
+                <td className={`${tdClase} font-medium text-origen-950`}>{emp.nombre}</td>
+                <td className={tdClase}>{emp.dui}</td>
+                <td className={tdClase}>{emp.cargo}</td>
+                <td className={tdClase}>{emp.sucursal?.nombre ?? emp.sucursalId}</td>
+                <td className={`${tdClase} text-right`}>{dinero(emp.salarioMensual)}</td>
+                <td className={tdClase}>
+                  <Insignia color={emp.activo ? 'verde' : 'gris'}>{emp.activo ? 'Activo' : 'Inactivo'}</Insignia>
+                </td>
+                <td className={`${tdClase} whitespace-nowrap text-right`}>
+                  <button type="button" onClick={() => editar(emp)} className={`${botonGris} mr-2`}>
+                    <Icono nombre="edit" tamano={18} />
                     Editar
                   </button>
                   {emp.activo && (
-                    <button onClick={() => desactivar(emp)} className="rounded border border-red-300 px-3 py-1 text-red-700 hover:bg-red-50">
+                    <button type="button" onClick={() => desactivar(emp)} className={botonRojo}>
+                      <Icono nombre="person_off" tamano={18} />
                       Desactivar
                     </button>
                   )}
                 </td>
               </tr>
             ))}
-            {empleados.length === 0 && (
-              <tr><td colSpan="7" className="p-4 text-center text-gray-500">No hay empleados registrados</td></tr>
-            )}
+            {empleados.length === 0 && <FilaVacia columnas={7} texto="No hay empleados registrados" />}
           </tbody>
         </table>
       </div>

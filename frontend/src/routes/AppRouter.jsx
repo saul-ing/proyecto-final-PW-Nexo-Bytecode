@@ -11,7 +11,6 @@ import TurnoPage from '../pages/caja/TurnoPage';
 import ComprasPage from '../pages/compras/ComprasPage';
 import ProveedoresPage from '../pages/compras/ProveedoresPage';
 import CuentasPorPagarPage from '../pages/compras/CuentasPorPagarPage';
-import EstadoCuentaProveedor from '../pages/compras/EstadoCuentaProveedor';
 import InsumosPage from '../pages/inventario/InsumosPage';
 import ProductosPage from '../pages/inventario/ProductosPage';
 import RecetaPage from '../pages/inventario/RecetaPage';
@@ -21,7 +20,6 @@ import PlanillasPage from '../pages/rrhh/PlanillasPage';
 const PESTANAS_INVENTARIO = [
   { to: '/inventario/insumos', texto: 'Insumos' },
   { to: '/inventario/productos', texto: 'Productos' },
-  { to: '/inventario/recetas', texto: 'Recetas' },
 ];
 
 const PESTANAS_COMPRAS = [
@@ -44,10 +42,10 @@ export default function AppRouter() {
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/pos" element={<PosPage />} />
 
-            {/* Ventas: ADMIN, GERENTE y CAJERO */}
+            {/* POS y Ventas: ADMIN, GERENTE y CAJERO (igual que el backend) */}
             <Route element={<ProtectedRoute roles={['ADMIN', 'GERENTE', 'CAJERO']} />}>
+              <Route path="/pos" element={<PosPage />} />
               <Route path="/ventas" element={<HistorialVentas />} />
               <Route path="/ventas/:id" element={<VistaFactura />} />
             </Route>
@@ -61,7 +59,7 @@ export default function AppRouter() {
                 <Route index element={<Navigate to="insumos" replace />} />
                 <Route path="insumos" element={<InsumosPage />} />
                 <Route path="productos" element={<ProductosPage />} />
-                <Route path="recetas" element={<RecetaPage />} />
+                <Route path="productos/:id/receta" element={<RecetaPage />} />
               </Route>
             </Route>
 
@@ -74,7 +72,6 @@ export default function AppRouter() {
                 <Route index element={<Navigate to="facturas" replace />} />
                 <Route path="facturas" element={<ComprasPage />} />
                 <Route path="proveedores" element={<ProveedoresPage />} />
-                <Route path="proveedores/:id/estado-cuenta" element={<EstadoCuentaProveedor />} />
                 <Route path="cuentas" element={<CuentasPorPagarPage />} />
               </Route>
             </Route>

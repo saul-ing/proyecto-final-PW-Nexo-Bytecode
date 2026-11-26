@@ -24,12 +24,18 @@ export async function abrirTurno({ id: usuarioId, sucursalId }, montoInicial) {
     throw new AppError('El monto inicial debe ser un número mayor o igual a 0', 400);
   }
 
-  if (await obtenerTurnoAbierto(prisma, usuarioId)) {
-    throw new AppError('Ya tienes un turno abierto', 409);
-  }
+  // El candado de PostgreSQL hace que dos aperturas del mismo usuario (ej. doble clic)
+  // se atiendan una por una: la segunda ya ve el turno abierto y se rechaza.
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${usuarioId})`;
 
-  return prisma.turno.create({
-    data: { montoInicial: monto, usuarioId, sucursalId },
+    if (await obtenerTurnoAbierto(tx, usuarioId)) {
+      throw new AppError('Ya tienes un turno abierto', 409);
+    }
+
+    return tx.turno.create({
+      data: { montoInicial: monto, usuarioId, sucursalId },
+    });
   });
 }
 

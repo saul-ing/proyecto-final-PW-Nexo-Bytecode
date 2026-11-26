@@ -26,7 +26,10 @@ export default function Dashboard() {
   const [datos, setDatos] = useState({ ventasHoy: null, totalHoy: null, alertas: null, turno: null });
 
   useEffect(() => {
-    Promise.allSettled([getVentas(), getAlertas(), getTurnoActual()]).then(([ventas, alertas, turno]) => {
+    // El turno solo se pide si el rol tiene caja (al barista el backend le responde 403)
+    const conCaja = ['ADMIN', 'GERENTE', 'CAJERO'].includes(usuario.rol);
+    const turnoActual = conCaja ? getTurnoActual() : Promise.reject(new Error('sin caja'));
+    Promise.allSettled([getVentas(), getAlertas(), turnoActual]).then(([ventas, alertas, turno]) => {
       const hoy = new Date().toDateString();
       const deHoy =
         ventas.status === 'fulfilled'
@@ -40,7 +43,7 @@ export default function Dashboard() {
         turno: turno.status === 'fulfilled' ? (turno.value ? 'Abierto' : 'Cerrado') : null,
       });
     });
-  }, []);
+  }, [usuario.rol]);
 
   const accesos = MODULOS.filter((m) => m.to !== '/' && m.roles.includes(usuario.rol));
   const mostrar = (valor, formato = (v) => v) => (valor === null ? '—' : formato(valor));
@@ -62,7 +65,10 @@ export default function Dashboard() {
         <Indicador icono="lock_clock" titulo="Turno de caja" valor={mostrar(datos.turno)} />
       </div>
 
-      <h2 className="mb-3 text-lg font-semibold text-origen-950">Accesos rápidos</h2>
+      {/* El barista no tiene módulos aparte del dashboard */}
+      {accesos.length > 0 && (
+        <h2 className="mb-3 text-lg font-semibold text-origen-950">Accesos rápidos</h2>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {accesos.map((m) => (
           <Link

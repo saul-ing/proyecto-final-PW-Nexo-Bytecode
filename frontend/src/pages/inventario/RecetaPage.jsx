@@ -2,11 +2,9 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getInsumos, getProducto, guardarReceta } from '../../api/inventarioApi';
 
-// Clases de Tailwind compartidas con caja y compras
-const inputClase = 'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
-const botonClase = 'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800';
-const botonGris = 'rounded border border-gray-300 px-3 py-1 hover:bg-gray-100';
-const botonRojo = 'rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700';
+import Icono from '../../components/Icono';
+import { Alerta, Encabezado } from '../../components/ui';
+import { botonClase, botonGris, botonRojo, inputClase, tarjetaClase } from '../../components/estilos';
 
 // Ruta: /inventario/productos/:id/receta
 function RecetaPage() {
@@ -41,35 +39,47 @@ function RecetaPage() {
   if (!producto) return <div className="p-6">Cargando...</div>;
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Receta: {producto.nombre}</h1>
-      <p className="mb-4 text-gray-500">Cantidades para 1 unidad</p>
+    <div>
+      <Encabezado icono="menu_book" titulo={`Receta: ${producto.nombre}`} descripcion="Cantidades para 1 unidad" />
 
-      {mensaje && <div className="mb-4 rounded bg-blue-100 p-3 text-blue-800">{mensaje}</div>}
+      {mensaje && <Alerta tipo="info" onCerrar={() => setMensaje('')}>{mensaje}</Alerta>}
 
-      {lineas.map((linea, i) => (
-        <div key={i} className="mb-2 grid gap-2 md:grid-cols-12">
-          <div className="md:col-span-6">
-            <select value={linea.insumoId} onChange={(e) => cambiarLinea(i, 'insumoId', e.target.value)} className={inputClase}>
-              <option value="">Seleccionar insumo</option>
-              {insumos.map((ins) => (
-                <option key={ins.id} value={ins.id}>{ins.nombre} ({ins.unidad})</option>
-              ))}
-            </select>
-          </div>
-          <div className="md:col-span-3">
-            <input type="number" step="any" placeholder="Cantidad" value={linea.cantidad} onChange={(e) => cambiarLinea(i, 'cantidad', e.target.value)} className={inputClase} />
-          </div>
-          <div className="md:col-span-3">
-            <button className={botonRojo} onClick={() => setLineas(lineas.filter((_, j) => j !== i))}>Quitar</button>
-          </div>
-        </div>
-      ))}
+      <div className={`${tarjetaClase} mb-4 space-y-3`}>
+        {lineas.length === 0 && <p className="text-sm text-gray-500">Esta receta todavía no tiene insumos.</p>}
 
-      <button className={`${botonGris} mr-2`} onClick={() => setLineas([...lineas, { insumoId: '', cantidad: '' }])}>
-        + Insumo
-      </button>
-      <button className={botonClase} onClick={guardar}>Guardar receta</button>
+        {lineas.map((linea, i) => (
+          <div key={i} className="grid items-center gap-3 md:grid-cols-12">
+            <div className="md:col-span-6">
+              <select value={linea.insumoId} onChange={(e) => cambiarLinea(i, 'insumoId', e.target.value)} className={inputClase}>
+                <option value="">Seleccionar insumo</option>
+                {insumos.map((ins) => (
+                  <option key={ins.id} value={ins.id}>{ins.nombre} ({ins.unidad})</option>
+                ))}
+              </select>
+            </div>
+            <div className="md:col-span-4">
+              <input type="number" step="any" placeholder="Cantidad" value={linea.cantidad} onChange={(e) => cambiarLinea(i, 'cantidad', e.target.value)} className={inputClase} />
+            </div>
+            <div className="md:col-span-2">
+              <button type="button" className={botonRojo} onClick={() => setLineas(lineas.filter((_, j) => j !== i))}>
+                <Icono nombre="delete" tamano={18} />
+                Quitar
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className={botonGris} onClick={() => setLineas([...lineas, { insumoId: '', cantidad: '' }])}>
+          <Icono nombre="add" tamano={18} />
+          Insumo
+        </button>
+        <button type="button" className={botonClase} onClick={guardar}>
+          <Icono nombre="save" tamano={20} />
+          Guardar receta
+        </button>
+      </div>
     </div>
   );
 }

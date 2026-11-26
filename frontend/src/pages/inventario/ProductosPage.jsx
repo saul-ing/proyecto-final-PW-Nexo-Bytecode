@@ -3,14 +3,15 @@ import { Link } from 'react-router-dom';
 // Cambio: también se cargan insumos para elegir el de reventa
 import { crearProducto, editarProducto, eliminarProducto, getInsumos, getProductos } from '../../api/inventarioApi';
 
+import Icono from '../../components/Icono';
+import { Alerta, Campo, Encabezado, FilaVacia, Insignia } from '../../components/ui';
+import {
+  botonClase, botonGris, botonRojo, contenedorTabla, filaClase, inputClase,
+  tablaClase, tarjetaClase, tdClase, theadClase, thClase,
+} from '../../components/estilos';
+
 // Cambio: sin stock propio; REVENTA usa insumoReventaId
 const VACIO = { nombre: '', categoria: '', precio: '', tipo: 'ELABORADO', insumoReventaId: '' };
-
-// Clases de Tailwind compartidas con caja y compras
-const inputClase = 'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
-const botonClase = 'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800';
-const botonGris = 'rounded border border-gray-300 px-3 py-1 hover:bg-gray-100';
-const botonRojo = 'rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700';
 
 function ProductosPage() {
   const [productos, setProductos] = useState([]);
@@ -68,60 +69,93 @@ function ProductosPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Productos</h1>
+    <div>
+      <Encabezado icono="restaurant_menu" titulo="Productos" descripcion="Menú a la venta: elaborados y de reventa" />
 
-      {error && <div className="mb-4 rounded bg-red-100 p-3 text-red-800" onClick={() => setError('')}>{error}</div>}
+      {error && <Alerta tipo="error" onCerrar={() => setError('')}>{error}</Alerta>}
 
-      <form onSubmit={guardar} className="mb-4">
-        <div className="grid gap-2 md:grid-cols-6">
-          <div><input name="nombre" placeholder="Nombre" value={form.nombre} onChange={cambiar} required className={inputClase} /></div>
-          <div><input name="categoria" placeholder="Categoría" value={form.categoria} onChange={cambiar} required className={inputClase} /></div>
-          <div><input name="precio" type="number" step="0.01" placeholder="Precio" value={form.precio} onChange={cambiar} required className={inputClase} /></div>
-          <div>
+      <form onSubmit={guardar} className={`${tarjetaClase} mb-6`}>
+        <h3 className="mb-3 font-semibold text-origen-950">{editandoId ? 'Editar producto' : 'Nuevo producto'}</h3>
+        <div className="grid items-end gap-3 md:grid-cols-6">
+          <Campo etiqueta="Nombre">
+            <input name="nombre" placeholder="Latte grande" value={form.nombre} onChange={cambiar} required className={inputClase} />
+          </Campo>
+          <Campo etiqueta="Categoría">
+            <input name="categoria" placeholder="Bebidas calientes" value={form.categoria} onChange={cambiar} required className={inputClase} />
+          </Campo>
+          <Campo etiqueta="Precio (con IVA)">
+            <input name="precio" type="number" step="0.01" value={form.precio} onChange={cambiar} required className={inputClase} />
+          </Campo>
+          <Campo etiqueta="Tipo">
             <select name="tipo" value={form.tipo} onChange={cambiar} className={inputClase}>
               <option value="ELABORADO">Elaborado</option>
               <option value="REVENTA">Reventa</option>
             </select>
-          </div>
-          {/* Cambio: reventa elige el insumo que descuenta (antes era stock propio) */}
+          </Campo>
+          {/* Reventa elige el insumo que descuenta */}
           {form.tipo === 'REVENTA' && (
-            <div>
+            <Campo etiqueta="Insumo">
               <select name="insumoReventaId" value={form.insumoReventaId} onChange={cambiar} required className={inputClase}>
-                <option value="">Insumo...</option>
+                <option value="">Seleccione...</option>
                 {insumos.map((i) => (
                   <option key={i.id} value={i.id}>{i.nombre}</option>
                 ))}
               </select>
-            </div>
+            </Campo>
           )}
-          <div><button type="submit" className={botonClase}>{editandoId ? 'Guardar' : 'Agregar'}</button></div>
+          <button type="submit" className={botonClase}>
+            <Icono nombre={editandoId ? 'save' : 'add'} tamano={20} />
+            {editandoId ? 'Guardar' : 'Agregar'}
+          </button>
         </div>
       </form>
 
-      <table className="w-full text-left text-sm">
-        <thead className="bg-gray-100">
-          <tr><th className="p-2">Nombre</th><th className="p-2">Categoría</th><th className="p-2">Precio</th><th className="p-2">Tipo</th><th className="p-2"></th></tr>
-        </thead>
-        <tbody>
-          {productos.map((p) => (
-            <tr key={p.id} className="border-b border-gray-200">
-              <td className="p-2">{p.nombre}</td>
-              {/* Cambio: se muestra el nombre de la categoría y el insumo de reventa */}
-              <td className="p-2">{p.categoria.nombre}</td>
-              <td className="p-2">${Number(p.precio).toFixed(2)}</td>
-              <td className="p-2">{p.tipo === 'REVENTA' ? `Reventa (${p.insumoReventa?.nombre})` : 'Elaborado'}</td>
-              <td className="p-2">
-                {p.tipo === 'ELABORADO' && (
-                  <Link to={`/inventario/productos/${p.id}/receta`} className={`${botonGris} mr-2`}>Receta</Link>
-                )}
-                <button className={`${botonGris} mr-2`} onClick={() => editar(p)}>Editar</button>
-                <button className={botonRojo} onClick={() => eliminar(p.id)}>Eliminar</button>
-              </td>
+      <div className={contenedorTabla}>
+        <table className={tablaClase}>
+          <thead className={theadClase}>
+            <tr>
+              <th className={thClase}>Nombre</th>
+              <th className={thClase}>Categoría</th>
+              <th className={thClase}>Precio</th>
+              <th className={thClase}>Tipo</th>
+              <th className={thClase}></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {productos.map((p) => (
+              <tr key={p.id} className={filaClase}>
+                <td className={`${tdClase} font-medium text-origen-950`}>{p.nombre}</td>
+                <td className={tdClase}>{p.categoria.nombre}</td>
+                <td className={tdClase}>${Number(p.precio).toFixed(2)}</td>
+                <td className={tdClase}>
+                  {p.tipo === 'REVENTA' ? (
+                    <Insignia color="azul">Reventa ({p.insumoReventa?.nombre})</Insignia>
+                  ) : (
+                    <Insignia color="teal">Elaborado</Insignia>
+                  )}
+                </td>
+                <td className={`${tdClase} whitespace-nowrap text-right`}>
+                  {p.tipo === 'ELABORADO' && (
+                    <Link to={`/inventario/productos/${p.id}/receta`} className={`${botonGris} mr-2`}>
+                      <Icono nombre="menu_book" tamano={18} />
+                      Receta
+                    </Link>
+                  )}
+                  <button type="button" className={`${botonGris} mr-2`} onClick={() => editar(p)}>
+                    <Icono nombre="edit" tamano={18} />
+                    Editar
+                  </button>
+                  <button type="button" className={botonRojo} onClick={() => eliminar(p.id)}>
+                    <Icono nombre="delete" tamano={18} />
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {productos.length === 0 && <FilaVacia columnas={5} texto="No hay productos registrados" />}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -74,12 +74,21 @@ export async function buscarClientes(buscar) {
   });
 }
 
-export async function crearCliente({ nombre, nit, nrc, giro, direccion, telefono, email }) {
+export async function crearCliente(datos) {
+  // Quita espacios al inicio y al final; un campo con solo espacios queda vacío
+  const limpio = (v) => (typeof v === 'string' ? v.trim() : v) || null;
+  const [nombre, nit, nrc] = [limpio(datos.nombre), limpio(datos.nit), limpio(datos.nrc)];
   if (!nombre || !nit || !nrc) {
     throw new AppError('Nombre, NIT y NRC son obligatorios para un CCF', 400);
   }
 
   return prisma.cliente.create({
-    data: { nombre, nit, nrc, giro, direccion, telefono, email },
+    data: {
+      nombre, nit, nrc,
+      giro: limpio(datos.giro),
+      direccion: limpio(datos.direccion),
+      telefono: limpio(datos.telefono),
+      email: limpio(datos.email),
+    },
   });
 }

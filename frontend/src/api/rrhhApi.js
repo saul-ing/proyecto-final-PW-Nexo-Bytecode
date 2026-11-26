@@ -1,13 +1,6 @@
-import axios from 'axios';
+import apiBase, { crearApi } from './axios';
 
-const api = axios.create({ baseURL: `${import.meta.env.VITE_API_URL}/rrhh` });
-
-// El backend pide token, se manda en cada petición
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+const api = crearApi('/rrhh');
 
 // Empleados. datos = { nombre, dui, nit, numeroIsss, numeroAfp, cargo, salarioMensual, fechaIngreso, sucursalId }
 // params opcionales: { activo: true, sucursalId }
@@ -22,3 +15,5 @@ export const getPlanillas = () => api.get('/planillas').then((r) => r.data.data)
 export const getPlanilla = (id) => api.get(`/planillas/${id}`).then((r) => r.data.data);
 export const generarPlanilla = (datos) => api.post('/planillas/generar', datos).then((r) => r.data.data);
 export const pagarPlanilla = (id) => api.patch(`/planillas/${id}/pagar`).then((r) => r.data.data);
+// Sucursales para el selector (ajustar si la respuesta del backend es distinta)
+export const getSucursales = () => apiBase.get('/sucursales').then((r) => r.data.sucursales ?? r.data.data ?? r.data);

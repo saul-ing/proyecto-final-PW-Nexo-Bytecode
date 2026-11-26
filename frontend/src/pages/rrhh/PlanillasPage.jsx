@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
 import { getPlanillas, getPlanilla, generarPlanilla, pagarPlanilla } from '../../api/rrhhApi';
 
+import Icono from '../../components/Icono';
+import { Alerta, Campo, Encabezado, FilaVacia, Insignia, Modal } from '../../components/ui';
+import {
+  botonClase, botonGris, contenedorTabla, filaClase, inputClase,
+  tablaClase, tarjetaClase, tdClase, theadClase, thClase,
+} from '../../components/estilos';
+
 const dinero = (n) => `$${Number(n ?? 0).toFixed(2)}`;
 const fecha = (f) => (f ? new Date(f).toLocaleDateString('es-SV') : '-');
 
 const FECHAS_VACIAS = { fechaInicio: '', fechaFin: '' };
 
-const inputClase =
-  'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
-const botonClase =
-  'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-50';
+// En la base la planilla pagada queda como APROBADA; en pantalla se muestra "PAGADA"
+const textoEstado = (estado) => (estado === 'APROBADA' ? 'PAGADA' : estado);
 
 function PlanillasPage() {
   const [planillas, setPlanillas] = useState([]);
@@ -77,24 +82,23 @@ const cargar = () =>
     : 0;
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Planillas quincenales</h1>
+    <div>
+      <Encabezado icono="request_page" titulo="Planillas quincenales" descripcion="Cálculo de ISSS, AFP y renta por quincena" />
 
-      {error && <div className="mb-4 rounded bg-red-100 p-3 text-red-800">{error}</div>}
-      {mensaje && <div className="mb-4 rounded bg-green-100 p-3 text-green-800">{mensaje}</div>}
+      {error && <Alerta tipo="error" onCerrar={() => setError('')}>{error}</Alerta>}
+      {mensaje && <Alerta tipo="ok" onCerrar={() => setMensaje('')}>{mensaje}</Alerta>}
 
-      <form onSubmit={generar} className="mb-6 space-y-4 rounded border border-gray-200 p-4">
-        <h2 className="text-lg font-semibold">Generar planilla</h2>
+      <form onSubmit={generar} className={`${tarjetaClase} mb-6 space-y-4`}>
+        <h3 className="font-semibold text-origen-950">Generar planilla</h3>
         <div className="grid items-end gap-3 md:grid-cols-3">
-          <label className="block">
-            <span className="text-sm text-gray-600">Inicio de la quincena *</span>
+          <Campo etiqueta="Inicio de la quincena *">
             <input name="fechaInicio" type="date" value={form.fechaInicio} onChange={cambiar} required className={inputClase} />
-          </label>
-          <label className="block">
-            <span className="text-sm text-gray-600">Fin de la quincena *</span>
+          </Campo>
+          <Campo etiqueta="Fin de la quincena *">
             <input name="fechaFin" type="date" value={form.fechaFin} onChange={cambiar} required className={inputClase} />
-          </label>
+          </Campo>
           <button type="submit" disabled={enviando} className={botonClase}>
+            <Icono nombre="calculate" tamano={20} />
             {enviando ? 'Generando...' : 'Generar planilla'}
           </button>
         </div>
@@ -103,100 +107,107 @@ const cargar = () =>
         </p>
       </form>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead className="bg-gray-100">
+      <div className={contenedorTabla}>
+        <table className={tablaClase}>
+          <thead className={theadClase}>
             <tr>
-              <th className="p-2">#</th>
-              <th className="p-2">Período</th>
-              <th className="p-2">Tipo</th>
-              <th className="p-2">Estado</th>
-              <th className="p-2"></th>
+              <th className={thClase}>#</th>
+              <th className={thClase}>Período</th>
+              <th className={thClase}>Tipo</th>
+              <th className={thClase}>Estado</th>
+              <th className={thClase}></th>
             </tr>
           </thead>
           <tbody>
             {planillas.map((p) => (
-              <tr key={p.id} className="border-b border-gray-200">
-                <td className="p-2">{p.id}</td>
-                <td className="p-2">{fecha(p.fechaInicio)} al {fecha(p.fechaFin)}</td>
-                <td className="p-2">{p.tipo}</td>
-                <td className="p-2">{p.estado}</td>
-                <td className="p-2 text-right">
-                  <button onClick={() => ver(p.id)} className="rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">Ver</button>
+              <tr key={p.id} className={filaClase}>
+                <td className={tdClase}>{p.id}</td>
+                <td className={tdClase}>{fecha(p.fechaInicio)} al {fecha(p.fechaFin)}</td>
+                <td className={tdClase}>{p.tipo}</td>
+                <td className={tdClase}>
+                  <Insignia color={p.estado === 'APROBADA' ? 'verde' : 'amarillo'}>{textoEstado(p.estado)}</Insignia>
+                </td>
+                <td className={`${tdClase} text-right`}>
+                  <button type="button" onClick={() => ver(p.id)} className={botonGris}>
+                    <Icono nombre="visibility" tamano={18} />
+                    Ver
+                  </button>
                 </td>
               </tr>
             ))}
-            {planillas.length === 0 && (
-              <tr><td colSpan="5" className="p-4 text-center text-gray-500">No hay planillas generadas</td></tr>
-            )}
+            {planillas.length === 0 && <FilaVacia columnas={5} texto="No hay planillas generadas" />}
           </tbody>
         </table>
       </div>
 
       {/* Detalle de la planilla seleccionada */}
       {detalle && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4" onClick={() => setDetalle(null)}>
-          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded bg-white p-5 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <h2 className="mb-1 text-lg font-semibold">Planilla #{detalle.id} ({detalle.estado})</h2>
-            <p className="text-sm text-gray-600">
-              {fecha(detalle.fechaInicio)} al {fecha(detalle.fechaFin)} · {detalle.tipo}
-            </p>
-
-            <div className="my-3 overflow-x-auto">
-              <table className="w-full border-collapse text-left text-sm">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="p-2">Empleado</th>
-                    <th className="p-2">Cargo</th>
-                    <th className="p-2 text-right">Bruto</th>
-                    <th className="p-2 text-right">ISSS</th>
-                    <th className="p-2 text-right">AFP</th>
-                    <th className="p-2 text-right">Renta</th>
-                    <th className="p-2 text-right">Neto</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detalle.detalles.map((d) => (
-                    <tr key={d.id} className="border-b border-gray-200">
-                      <td className="p-2">{d.empleado.nombre}</td>
-                      <td className="p-2">{d.empleado.cargo}</td>
-                      <td className="p-2 text-right">{dinero(d.salarioBruto)}</td>
-                      <td className="p-2 text-right">{dinero(d.isss)}</td>
-                      <td className="p-2 text-right">{dinero(d.afp)}</td>
-                      <td className="p-2 text-right">{dinero(d.renta)}</td>
-                      <td className="p-2 text-right font-semibold">{dinero(d.salarioNeto)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-50 font-bold">
-                  <tr>
-                    <td className="p-2" colSpan="2">Totales</td>
-                    <td className="p-2 text-right">{dinero(t.salarioBruto)}</td>
-                    <td className="p-2 text-right">{dinero(t.isss)}</td>
-                    <td className="p-2 text-right">{dinero(t.afp)}</td>
-                    <td className="p-2 text-right">{dinero(t.renta)}</td>
-                    <td className="p-2 text-right">{dinero(t.salarioNeto)}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-
-            <div className="text-sm">
-              <p>ISSS patronal (7.5%): {dinero(t.isssPatronal)}</p>
-              <p>AFP patronal (8.75%): {dinero(t.afpPatronal)}</p>
-              <p className="text-base font-bold">Costo total para la empresa: {dinero(costoEmpresa)}</p>
-            </div>
-
-            <div className="mt-4 flex gap-2">
-              {detalle.estado === 'BORRADOR' && (
-                <button onClick={pagar} className={botonClase}>Marcar como pagada</button>
-              )}
-              <button onClick={() => setDetalle(null)} className="rounded border border-gray-300 px-4 py-2 hover:bg-gray-100">
-                Cerrar
-              </button>
-            </div>
+        <Modal onCerrar={() => setDetalle(null)} ancho="max-w-4xl">
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <h2 className="text-lg font-bold text-origen-950">Planilla #{detalle.id}</h2>
+            <Insignia color={detalle.estado === 'APROBADA' ? 'verde' : 'amarillo'}>{textoEstado(detalle.estado)}</Insignia>
           </div>
-        </div>
+          <p className="text-sm text-gray-500">
+            {fecha(detalle.fechaInicio)} al {fecha(detalle.fechaFin)} · {detalle.tipo}
+          </p>
+
+          <div className={`${contenedorTabla} my-4`}>
+            <table className={tablaClase}>
+              <thead className={theadClase}>
+                <tr>
+                  <th className={thClase}>Empleado</th>
+                  <th className={thClase}>Cargo</th>
+                  <th className={`${thClase} text-right`}>Bruto</th>
+                  <th className={`${thClase} text-right`}>ISSS</th>
+                  <th className={`${thClase} text-right`}>AFP</th>
+                  <th className={`${thClase} text-right`}>Renta</th>
+                  <th className={`${thClase} text-right`}>Neto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detalle.detalles.map((d) => (
+                  <tr key={d.id} className={filaClase}>
+                    <td className={`${tdClase} font-medium text-origen-950`}>{d.empleado.nombre}</td>
+                    <td className={tdClase}>{d.empleado.cargo}</td>
+                    <td className={`${tdClase} text-right`}>{dinero(d.salarioBruto)}</td>
+                    <td className={`${tdClase} text-right`}>{dinero(d.isss)}</td>
+                    <td className={`${tdClase} text-right`}>{dinero(d.afp)}</td>
+                    <td className={`${tdClase} text-right`}>{dinero(d.renta)}</td>
+                    <td className={`${tdClase} text-right font-semibold`}>{dinero(d.salarioNeto)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot className="bg-origen-100 font-bold text-origen-950">
+                <tr>
+                  <td className={tdClase} colSpan="2">Totales</td>
+                  <td className={`${tdClase} text-right`}>{dinero(t.salarioBruto)}</td>
+                  <td className={`${tdClase} text-right`}>{dinero(t.isss)}</td>
+                  <td className={`${tdClase} text-right`}>{dinero(t.afp)}</td>
+                  <td className={`${tdClase} text-right`}>{dinero(t.renta)}</td>
+                  <td className={`${tdClase} text-right`}>{dinero(t.salarioNeto)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div className="rounded-xl bg-origen-100 p-3 text-sm text-origen-700">
+            <p>ISSS patronal (7.5%): {dinero(t.isssPatronal)}</p>
+            <p>AFP patronal (8.75%): {dinero(t.afpPatronal)}</p>
+            <p className="text-base font-bold text-origen-950">Costo total para la empresa: {dinero(costoEmpresa)}</p>
+          </div>
+
+          <div className="mt-4 flex gap-2">
+            {detalle.estado === 'BORRADOR' && (
+              <button type="button" onClick={pagar} className={botonClase}>
+                <Icono nombre="check_circle" tamano={20} />
+                Marcar como pagada
+              </button>
+            )}
+            <button type="button" onClick={() => setDetalle(null)} className={`${botonGris} px-4 py-2`}>
+              Cerrar
+            </button>
+          </div>
+        </Modal>
       )}
     </div>
   );

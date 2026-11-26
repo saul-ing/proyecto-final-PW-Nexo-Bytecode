@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { crearProveedor, editarProveedor, eliminarProveedor, getProveedores } from '../../api/comprasApi';
 import EstadoCuentaProveedor from './EstadoCuentaProveedor';
 
-const VACIO = { nombre: '', nit: '', nrc: '', telefono: '', email: '', diasCredito: 0 };
+import Icono from '../../components/Icono';
+import { Alerta, Campo, Encabezado, FilaVacia } from '../../components/ui';
+import {
+  botonClase, botonGris, botonRojo, contenedorTabla, filaClase, inputClase,
+  tablaClase, tarjetaClase, tdClase, theadClase, thClase,
+} from '../../components/estilos';
 
-const inputClase =
-  'w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-600';
-const botonClase =
-  'rounded bg-amber-700 px-4 py-2 font-medium text-white hover:bg-amber-800 disabled:opacity-50';
+const VACIO = { nombre: '', nit: '', nrc: '', telefono: '', email: '', diasCredito: 0 };
 
 function ProveedoresPage() {
   const [proveedores, setProveedores] = useState([]);
@@ -76,81 +78,83 @@ function ProveedoresPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Proveedores</h1>
+    <div>
+      <Encabezado icono="local_shipping" titulo="Proveedores" descripcion="Quién nos vende y con qué condiciones de crédito" />
 
-      {error && <div className="mb-4 rounded bg-red-100 p-3 text-red-800">{error}</div>}
+      {error && <Alerta tipo="error" onCerrar={() => setError('')}>{error}</Alerta>}
 
-      <form onSubmit={guardar} className="mb-6 grid gap-3 rounded border border-gray-200 p-4 md:grid-cols-3">
-        <h2 className="text-lg font-semibold md:col-span-3">{editandoId ? 'Editar proveedor' : 'Nuevo proveedor'}</h2>
-        <label className="block">
-          <span className="text-sm text-gray-600">Nombre *</span>
+      <form onSubmit={guardar} className={`${tarjetaClase} mb-6 grid gap-3 md:grid-cols-3`}>
+        <h3 className="font-semibold text-origen-950 md:col-span-3">{editandoId ? 'Editar proveedor' : 'Nuevo proveedor'}</h3>
+        <Campo etiqueta="Nombre *">
           <input name="nombre" value={form.nombre} onChange={cambiar} required className={inputClase} />
-        </label>
-        <label className="block">
-          <span className="text-sm text-gray-600">NIT</span>
+        </Campo>
+        <Campo etiqueta="NIT">
           <input name="nit" value={form.nit} onChange={cambiar} className={inputClase} />
-        </label>
-        <label className="block">
-          <span className="text-sm text-gray-600">NRC</span>
+        </Campo>
+        <Campo etiqueta="NRC">
           <input name="nrc" value={form.nrc} onChange={cambiar} className={inputClase} />
-        </label>
-        <label className="block">
-          <span className="text-sm text-gray-600">Teléfono</span>
+        </Campo>
+        <Campo etiqueta="Teléfono">
           <input name="telefono" value={form.telefono} onChange={cambiar} className={inputClase} />
-        </label>
-        <label className="block">
-          <span className="text-sm text-gray-600">Correo</span>
+        </Campo>
+        <Campo etiqueta="Correo">
           <input name="email" type="email" value={form.email} onChange={cambiar} className={inputClase} />
-        </label>
-        <label className="block">
-          <span className="text-sm text-gray-600">Días de crédito (0 = contado)</span>
+        </Campo>
+        <Campo etiqueta="Días de crédito (0 = contado)">
           <input name="diasCredito" type="number" min="0" step="1" value={form.diasCredito} onChange={cambiar} className={inputClase} />
-        </label>
+        </Campo>
         <div className="flex gap-2 md:col-span-3">
           <button type="submit" disabled={enviando} className={botonClase}>
+            <Icono nombre={editandoId ? 'save' : 'add'} tamano={20} />
             {editandoId ? 'Guardar cambios' : 'Agregar proveedor'}
           </button>
           {editandoId && (
-            <button type="button" onClick={limpiar} className="rounded border border-gray-300 px-4 py-2 hover:bg-gray-100">
+            <button type="button" onClick={limpiar} className={`${botonGris} px-4 py-2`}>
               Cancelar
             </button>
           )}
         </div>
       </form>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead className="bg-gray-100">
+      <div className={contenedorTabla}>
+        <table className={tablaClase}>
+          <thead className={theadClase}>
             <tr>
-              <th className="p-2">Nombre</th>
-              <th className="p-2">NIT</th>
-              <th className="p-2">NRC</th>
-              <th className="p-2">Teléfono</th>
-              <th className="p-2">Correo</th>
-              <th className="p-2">Crédito</th>
-              <th className="p-2"></th>
+              <th className={thClase}>Nombre</th>
+              <th className={thClase}>NIT</th>
+              <th className={thClase}>NRC</th>
+              <th className={thClase}>Teléfono</th>
+              <th className={thClase}>Correo</th>
+              <th className={thClase}>Crédito</th>
+              <th className={thClase}></th>
             </tr>
           </thead>
           <tbody>
             {proveedores.map((p) => (
-              <tr key={p.id} className="border-b border-gray-200">
-                <td className="p-2 font-medium">{p.nombre}</td>
-                <td className="p-2">{p.nit || '-'}</td>
-                <td className="p-2">{p.nrc || '-'}</td>
-                <td className="p-2">{p.telefono || '-'}</td>
-                <td className="p-2">{p.email || '-'}</td>
-                <td className="p-2">{p.diasCredito === 0 ? 'Contado' : `${p.diasCredito} días`}</td>
-                <td className="p-2 text-right whitespace-nowrap">
-                  <button onClick={() => setEstadoCuentaId(p.id)} className="mr-2 rounded border border-amber-700 px-3 py-1 text-amber-800 hover:bg-amber-50">Estado de cuenta</button>
-                  <button onClick={() => editar(p)} className="mr-2 rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">Editar</button>
-                  <button onClick={() => eliminar(p)} className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">Desactivar</button>
+              <tr key={p.id} className={filaClase}>
+                <td className={`${tdClase} font-medium text-origen-950`}>{p.nombre}</td>
+                <td className={tdClase}>{p.nit || '-'}</td>
+                <td className={tdClase}>{p.nrc || '-'}</td>
+                <td className={tdClase}>{p.telefono || '-'}</td>
+                <td className={tdClase}>{p.email || '-'}</td>
+                <td className={tdClase}>{p.diasCredito === 0 ? 'Contado' : `${p.diasCredito} días`}</td>
+                <td className={`${tdClase} whitespace-nowrap text-right`}>
+                  <button type="button" onClick={() => setEstadoCuentaId(p.id)} className={`${botonGris} mr-2`}>
+                    <Icono nombre="request_quote" tamano={18} />
+                    Estado de cuenta
+                  </button>
+                  <button type="button" onClick={() => editar(p)} className={`${botonGris} mr-2`}>
+                    <Icono nombre="edit" tamano={18} />
+                    Editar
+                  </button>
+                  <button type="button" onClick={() => eliminar(p)} className={botonRojo}>
+                    <Icono nombre="block" tamano={18} />
+                    Desactivar
+                  </button>
                 </td>
               </tr>
             ))}
-            {proveedores.length === 0 && (
-              <tr><td colSpan="7" className="p-4 text-center text-gray-500">No hay proveedores registrados</td></tr>
-            )}
+            {proveedores.length === 0 && <FilaVacia columnas={7} texto="No hay proveedores registrados" />}
           </tbody>
         </table>
       </div>
